@@ -20,8 +20,9 @@ data Policy
     = NetworkPolicy Network.Policy
     deriving (Eq, Show)
 
--- | Lift a domain policy into the root 'Policy' sum.
--- Implement one instance per domain when adding a new 'Policy' constructor.
+{- | Lift a domain policy into the root 'Policy' sum.
+Implement one instance per domain when adding a new 'Policy' constructor.
+-}
 class LiftPolicy a where
     liftPolicy :: a -> Policy
 

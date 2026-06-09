@@ -21,8 +21,9 @@ data Action
     | PowerAction Power.Action
     deriving (Eq, Show)
 
--- | Lift a domain action into the root 'Action' sum.
--- Implement one instance per domain when adding a new 'Action' constructor.
+{- | Lift a domain action into the root 'Action' sum.
+Implement one instance per domain when adding a new 'Action' constructor.
+-}
 class LiftAction a where
     liftAction :: a -> Action
 

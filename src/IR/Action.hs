@@ -3,6 +3,7 @@
 -- | Closed root sum of all executable actions across domains.
 module IR.Action (
     Action (..),
+    LiftAction (..),
 ) where
 
 import Data.Aeson
@@ -19,6 +20,17 @@ data Action
     = ServiceAction Service.Action
     | PowerAction Power.Action
     deriving (Eq, Show)
+
+-- | Lift a domain action into the root 'Action' sum.
+-- Implement one instance per domain when adding a new 'Action' constructor.
+class LiftAction a where
+    liftAction :: a -> Action
+
+instance LiftAction Service.Action where
+    liftAction = ServiceAction
+
+instance LiftAction Power.Action where
+    liftAction = PowerAction
 
 instance ToJSON Action where
     toJSON (ServiceAction a) = toJSON a

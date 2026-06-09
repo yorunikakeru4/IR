@@ -3,6 +3,7 @@
 -- | Closed root sum of all declarative constraints across domains.
 module IR.Policy (
     Policy (..),
+    LiftPolicy (..),
 ) where
 
 import Data.Aeson
@@ -18,6 +19,14 @@ the Executor resolves it against observed runtime state.
 data Policy
     = NetworkPolicy Network.Policy
     deriving (Eq, Show)
+
+-- | Lift a domain policy into the root 'Policy' sum.
+-- Implement one instance per domain when adding a new 'Policy' constructor.
+class LiftPolicy a where
+    liftPolicy :: a -> Policy
+
+instance LiftPolicy Network.Policy where
+    liftPolicy = NetworkPolicy
 
 instance ToJSON Policy where
     toJSON (NetworkPolicy p) = toJSON p

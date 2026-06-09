@@ -1,0 +1,17 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  linux:
+    runs-on: native
+    steps:
+      - uses: https://code.forgejo.org/actions/checkout@v4
+      - name: Build and test
+        run: nix flake check --keep-going --print-build-logs

@@ -1,0 +1,67 @@
+cabal-version:   3.0
+name:            frogos-ir
+version:         0.1.0.0
+homepage:        https://git.cherdak.work/FrogOS/IR
+synopsis:        FrogOS Intermediate Representation types
+description:     IR types shared between the FrogOS DSL and Planner.
+license:         LGPL-2.1-only
+license-file:    LICENSE
+author:          Alexandr_Croitor
+maintainer:      kroitorsasha06@gmail.com
+category:        Language
+build-type:      Simple
+extra-doc-files: CHANGELOG.md
+
+common warnings
+  ghc-options: -Wall
+
+source-repository head
+  type:     git
+  location: https://git.cherdak.work/FrogOS/IR
+
+library
+  import:             warnings
+  hs-source-dirs:     src
+  default-extensions: StrictData
+  exposed-modules:
+    IR.Action
+    IR.Condition
+    IR.Domain.Error
+    IR.Domain.Network
+    IR.Domain.Power
+    IR.Domain.Process
+    IR.Domain.Service
+    IR.Domain.System
+    IR.ObserveStrategy
+    IR.Policy
+    IR.Types
+
+  build-depends:
+    , aeson  ^>=2.2
+    , base   ^>=4.20.2.0
+    , text   ^>=2.1
+
+  default-language:   Haskell2010
+
+test-suite frogos-ir-test
+  import:           warnings
+  type:             exitcode-stdio-1.0
+  hs-source-dirs:   test
+  main-is:          Spec.hs
+  other-modules:
+    IR.Domain.NetworkSpec
+    IR.Domain.PowerSpec
+    IR.Domain.ProcessSpec
+    IR.Domain.ServiceSpec
+    IR.Domain.SystemSpec
+
+  build-depends:
+    , aeson         ^>=2.2
+    , base          ^>=4.20.2.0
+    , bytestring    ^>=0.12
+    , frogos-ir
+    , tasty         ^>=1.5
+    , tasty-hunit   ^>=0.10
+    , text          ^>=2.1
+
+  default-language: Haskell2010

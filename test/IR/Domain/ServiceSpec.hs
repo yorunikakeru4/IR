@@ -48,20 +48,17 @@ tests =
                          in (decode (encode action) :: Maybe Action) @?= Just action
             , testCase "rejects out-of-range priority in JSON" $
                 ( decode
-                    "{\"type\":\"service_enable_priority\",\"name\":\"foo\",\"priority\":200}" ::
+                    "{\"type\":\"service_enable\",\"name\":\"foo\",\"priority\":200}" ::
                     Maybe Action
                 )
                     @?= Nothing
-            ]
-        , testGroup
-            "legacy JSON aliases"
-            [ testCase "service_enable decodes as priority 100" $
+            , testCase "absent priority field defaults to 100" $
                 ( decode
                     "{\"type\":\"service_enable\",\"name\":\"sshd\"}" ::
                     Maybe Action
                 )
                     @?= Just (EnableWithPriority (ServiceName "sshd") (unsafePriority 100))
-            , testCase "service_disable decodes as priority 100" $
+            , testCase "absent priority on disable defaults to 100" $
                 ( decode
                     "{\"type\":\"service_disable\",\"name\":\"docker\"}" ::
                     Maybe Action

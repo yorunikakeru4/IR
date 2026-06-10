@@ -18,6 +18,7 @@ import IR.Domain.Error (DomainError (InvalidInterval))
 newtype IntervalMs = IntervalMs Int
     deriving (Eq, Show)
 
+-- | Smart constructor for 'IntervalMs' that validates the input.
 mkIntervalMs :: Int -> Either DomainError IntervalMs
 mkIntervalMs ms
     | ms <= 0 = Left (InvalidInterval ms)

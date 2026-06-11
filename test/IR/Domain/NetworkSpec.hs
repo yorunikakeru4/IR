@@ -16,12 +16,18 @@ tests =
         [ testCase "rejects empty allow-ports list" $
             allowPortsPolicy [] @?= Left (EmptyList "AllowPorts")
         , testCase "rejects empty fallback alternatives" $
-            fallbackPolicy (Port 80) [] @?= Left (EmptyList "FallbackCandidates")
-        , testCase "valid policy JSON roundtrip" $ do
+            fallbackPolicy (PortResource (Port 80)) [] @?= Left (EmptyList "FallbackCandidates")
+        , testCase "valid allow-ports JSON roundtrip" $ do
             policy <- expectRight (allowPortsPolicy (ports [80, 443]))
+            decode (encode policy) @?= Just policy
+        , testCase "valid fallback JSON roundtrip" $ do
+            policy <- expectRight (fallbackPolicy (PortResource (Port 80)) [PortResource (Port 8080)])
             decode (encode policy) @?= Just policy
         , testCase "invalid policy JSON is rejected" $
             (decode (LBS.pack "{\"type\":\"allow_ports\",\"values\":[]}") :: Maybe Policy)
+                @?= Nothing
+        , testCase "fallback with empty alternatives is rejected from JSON" $
+            (decode (LBS.pack "{\"type\":\"fallback\",\"primary\":{\"type\":\"port\",\"value\":80},\"alternatives\":[]}") :: Maybe Policy)
                 @?= Nothing
         ]
 

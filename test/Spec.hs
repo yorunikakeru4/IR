@@ -5,6 +5,7 @@ import qualified IR.Domain.PowerSpec
 import qualified IR.Domain.ProcessSpec
 import qualified IR.Domain.ServiceSpec
 import qualified IR.Domain.SystemSpec
+import qualified IR.TypesSpec
 import Test.Tasty
 
 main :: IO ()
@@ -17,4 +18,5 @@ main =
             , IR.Domain.ProcessSpec.tests
             , IR.Domain.ServiceSpec.tests
             , IR.Domain.SystemSpec.tests
+            , IR.TypesSpec.tests
             ]

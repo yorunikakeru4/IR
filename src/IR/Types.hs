@@ -25,6 +25,7 @@ import GHC.Generics (Generic)
 import IR.Action (Action)
 import IR.Condition (Condition)
 import IR.Domain.Error (DomainError, mkName)
+import qualified IR.Domain.Service as Service
 import IR.Policy (Policy)
 
 {- | Monotonically incrementing IR schema version.
@@ -71,6 +72,7 @@ data ProfileSection = ProfileSection
 -- | A named group of policies and actions for a service.
 data ServiceSection = ServiceSection
     { serviceSectionName :: ServiceSectionName
+    , serviceSectionBaseState :: Maybe Service.ServiceBaseState
     , serviceSectionPolicies :: [Policy]
     , serviceSectionActions :: [Action]
     }
@@ -127,7 +129,10 @@ instance FromJSON ProfileSection where
 
 serviceSectionOptions :: Options
 serviceSectionOptions =
-    defaultOptions{fieldLabelModifier = dropFieldPrefix "serviceSection"}
+    defaultOptions
+        { fieldLabelModifier = dropFieldPrefix "serviceSection"
+        , omitNothingFields = True
+        }
 
 instance ToJSON ServiceSection where
     toJSON = genericToJSON serviceSectionOptions

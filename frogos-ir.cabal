@@ -54,6 +54,7 @@ test-suite frogos-ir-test
     IR.Domain.ProcessSpec
     IR.Domain.ServiceSpec
     IR.Domain.SystemSpec
+    IR.TypesSpec
 
   build-depends:
     , aeson         ^>=2.2

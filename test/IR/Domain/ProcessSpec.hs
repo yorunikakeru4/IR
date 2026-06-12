@@ -28,4 +28,19 @@ tests =
         , testCase "empty process name JSON is rejected" $
             (decode (LBS.pack "{\"type\":\"process_running\",\"name\":\"\"}") :: Maybe Condition)
                 @?= Nothing
+        , testCase "attachStrategy sets a missing process observation strategy" $ do
+            name <- expectRight (mkProcessName "steam")
+            newStrategy <- expectRight (Poll <$> mkIntervalMs 500)
+            attachStrategy newStrategy (ProcessRunning name Nothing)
+                @?= Right (ProcessRunning name (Just newStrategy))
+        , testCase "attachStrategy rejects an existing process observation strategy" $ do
+            name <- expectRight (mkProcessName "steam")
+            oldStrategy <- expectRight (Poll <$> mkIntervalMs 250)
+            newStrategy <- expectRight (Poll <$> mkIntervalMs 500)
+            attachStrategy newStrategy (ProcessRunning name (Just oldStrategy))
+                @?= Left StrategyConflict
         ]
+
+expectRight :: (Show errorValue) => Either errorValue value -> IO value
+expectRight (Right value) = pure value
+expectRight (Left err) = assertFailure ("expected Right, got Left: " <> show err)

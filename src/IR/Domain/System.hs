@@ -9,13 +9,14 @@ module IR.Domain.System (
     mkBatteryPercent,
     batteryPercentValue,
     Condition (..),
+    attachStrategy,
 ) where
 
 import Data.Aeson
 import Data.Aeson.Types (Parser)
 import Data.Text (Text)
 import qualified Data.Text as T
-import IR.Domain.Error (DomainError, mkPercent, mkThreshold)
+import IR.Domain.Error (DomainError (StrategyConflict), mkPercent, mkThreshold)
 import IR.ObserveStrategy (ObserveStrategy)
 
 newtype CpuLoadThreshold = CpuLoadThreshold Double
@@ -45,6 +46,20 @@ data Condition
     | -- | True while battery charge is above the given percentage (0-100).
       BatteryAbove BatteryPercent (Maybe ObserveStrategy)
     deriving (Eq, Show)
+
+attachStrategy :: ObserveStrategy -> Condition -> Either DomainError Condition
+attachStrategy strategy (CpuLoad threshold Nothing) =
+    Right (CpuLoad threshold (Just strategy))
+attachStrategy _strategy (CpuLoad _threshold (Just _existingStrategy)) =
+    Left StrategyConflict
+attachStrategy strategy (BatteryBelow percent Nothing) =
+    Right (BatteryBelow percent (Just strategy))
+attachStrategy _strategy (BatteryBelow _percent (Just _existingStrategy)) =
+    Left StrategyConflict
+attachStrategy strategy (BatteryAbove percent Nothing) =
+    Right (BatteryAbove percent (Just strategy))
+attachStrategy _strategy (BatteryAbove _percent (Just _existingStrategy)) =
+    Left StrategyConflict
 
 instance ToJSON Condition where
     toJSON (CpuLoad t obs) =

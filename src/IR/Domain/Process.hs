@@ -10,6 +10,7 @@ module IR.Domain.Process (
     intervalMilliseconds,
     ObserveStrategy (..),
     Condition (..),
+    attachStrategy,
 )
 where
 
@@ -17,7 +18,7 @@ import Data.Aeson
 import Data.Aeson.Types (Parser)
 import Data.Text (Text)
 import qualified Data.Text as T
-import IR.Domain.Error (DomainError, mkName)
+import IR.Domain.Error (DomainError (StrategyConflict), mkName)
 import IR.ObserveStrategy (IntervalMs, ObserveStrategy (..), intervalMilliseconds, mkIntervalMs)
 
 -- | Name of a system process as it appears in the process table.
@@ -35,6 +36,12 @@ data Condition
     = -- | True while the named process is present in the process table.
       ProcessRunning ProcessName (Maybe ObserveStrategy)
     deriving (Eq, Show)
+
+attachStrategy :: ObserveStrategy -> Condition -> Either DomainError Condition
+attachStrategy strategy (ProcessRunning name Nothing) =
+    Right (ProcessRunning name (Just strategy))
+attachStrategy _strategy (ProcessRunning _name (Just _existingStrategy)) =
+    Left StrategyConflict
 
 instance ToJSON Condition where
     toJSON (ProcessRunning (ProcessName n) obs) =

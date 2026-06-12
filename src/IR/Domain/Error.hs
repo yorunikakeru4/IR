@@ -15,6 +15,7 @@ data DomainError
     | InvalidInterval Int
     | InvalidThreshold Double
     | InvalidPercent Int
+    | StrategyConflict
     deriving (Eq, Show)
 
 mkThreshold :: (Double -> a) -> Double -> Either DomainError a

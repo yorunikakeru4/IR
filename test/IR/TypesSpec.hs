@@ -3,8 +3,8 @@
 module IR.TypesSpec (tests) where
 
 import Data.Aeson (decode, encode)
-import qualified Data.ByteString.Lazy.Char8 as BSC
-import Data.List (isInfixOf)
+import qualified Data.ByteString as BS
+import qualified Data.ByteString.Lazy as BSL
 import qualified IR.Domain.Service as Service
 import IR.Types
 import Test.Tasty
@@ -24,7 +24,7 @@ tests =
                     @?= Just (section Nothing)
             , testCase "omits baseState key when absent" $
                 assertBool "unexpected baseState key" $
-                    not ("baseState" `isInfixOf` BSC.unpack (encode (section Nothing)))
+                    not ("\"baseState\"" `BS.isInfixOf` BSL.toStrict (encode (section Nothing)))
             ]
         ]
 

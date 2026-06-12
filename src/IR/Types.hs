@@ -69,7 +69,7 @@ data ProfileSection = ProfileSection
     }
     deriving (Eq, Show, Generic)
 
--- | A named group of policies and actions for a service.
+-- | A named group of base state, policies, and actions for a service.
 data ServiceSection = ServiceSection
     { serviceSectionName :: ServiceSectionName
     , serviceSectionBaseState :: Maybe Service.ServiceBaseState

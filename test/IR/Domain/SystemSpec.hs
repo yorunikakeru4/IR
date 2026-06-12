@@ -6,6 +6,7 @@ import Data.Aeson (decode, encode)
 import qualified Data.ByteString.Lazy.Char8 as LBS
 import IR.Domain.Error
 import IR.Domain.System
+import IR.ObserveStrategy (ObserveStrategy (..), mkIntervalMs)
 import Test.Tasty
 import Test.Tasty.HUnit
 
@@ -33,6 +34,27 @@ tests =
         , testCase "invalid condition JSON is rejected" $
             (decode (LBS.pack "{\"type\":\"cpu_load\",\"threshold\":2}") :: Maybe Condition)
                 @?= Nothing
+        , testCase "attachStrategy sets every missing system observation strategy" $ do
+            threshold <- expectRight (mkCpuLoadThreshold 0.7)
+            percent <- expectRight (mkBatteryPercent 20)
+            strategy <- expectRight (Poll <$> mkIntervalMs 500)
+            attachStrategy strategy (CpuLoad threshold Nothing)
+                @?= Right (CpuLoad threshold (Just strategy))
+            attachStrategy strategy (BatteryBelow percent Nothing)
+                @?= Right (BatteryBelow percent (Just strategy))
+            attachStrategy strategy (BatteryAbove percent Nothing)
+                @?= Right (BatteryAbove percent (Just strategy))
+        , testCase "attachStrategy rejects every existing system observation strategy" $ do
+            threshold <- expectRight (mkCpuLoadThreshold 0.7)
+            percent <- expectRight (mkBatteryPercent 20)
+            oldStrategy <- expectRight (Poll <$> mkIntervalMs 250)
+            newStrategy <- expectRight (Poll <$> mkIntervalMs 500)
+            attachStrategy newStrategy (CpuLoad threshold (Just oldStrategy))
+                @?= Left StrategyConflict
+            attachStrategy newStrategy (BatteryBelow percent (Just oldStrategy))
+                @?= Left StrategyConflict
+            attachStrategy newStrategy (BatteryAbove percent (Just oldStrategy))
+                @?= Left StrategyConflict
         ]
 
 expectRight :: (Show errorValue) => Either errorValue value -> IO value

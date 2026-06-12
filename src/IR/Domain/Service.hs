@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 
--- | Service-related IR nodes: actions for managing system services.
+-- | Service-related IR nodes: actions and base state for managing system services.
 module IR.Domain.Service (
     ServiceName (..),
     mkServiceName,
@@ -9,15 +9,16 @@ module IR.Domain.Service (
     mkPriority,
     priorityInt,
     Action (..),
+    ServiceBaseState (..),
 )
 where
 
 import Data.Aeson
 import Data.Aeson.Types (Parser)
+import Data.Maybe (fromMaybe)
 import Data.Text (Text)
 import qualified Data.Text as T
 import IR.Domain.Error (DomainError, mkName, mkPercent)
-import Data.Maybe (fromMaybe)
 
 -- | Name of a system service (e.g. systemd unit name without the @.service@ suffix).
 newtype ServiceName = ServiceName Text
@@ -87,3 +88,20 @@ instance FromJSON Action where
                 priority <- either (fail . show) pure (mkPriority p)
                 pure (DisableWithPriority name priority)
             _unknownType -> fail $ "unknown service action: " <> T.unpack t
+
+{- | Base state of a managed service: the state the reconciler returns the
+service to when no profile acts on it. Deliberately distinct from 'Action' —
+"desired under condition" and "base" are different roles.
+-}
+data ServiceBaseState = Enabled | Disabled
+    deriving (Eq, Show)
+
+instance ToJSON ServiceBaseState where
+    toJSON Enabled = "enabled"
+    toJSON Disabled = "disabled"
+
+instance FromJSON ServiceBaseState where
+    parseJSON = withText "ServiceBaseState" $ \t -> case t of
+        "enabled" -> pure Enabled
+        "disabled" -> pure Disabled
+        _unknownState -> fail $ "unknown service base state: " <> T.unpack t

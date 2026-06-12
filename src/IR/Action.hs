@@ -45,8 +45,8 @@ instance FromJSON Action where
                 t <- o .: "type" :: Parser Text
                 case t of
                     "service_disable" -> ServiceAction <$> parseJSON v
-                    "service_enable"  -> ServiceAction <$> parseJSON v
-                    "power_profile"   -> PowerAction <$> parseJSON v
-                    _unknownType      -> fail $ "unknown action type: " <> T.unpack t
+                    "service_enable" -> ServiceAction <$> parseJSON v
+                    "power_profile" -> PowerAction <$> parseJSON v
+                    _unknownType -> fail $ "unknown action type: " <> T.unpack t
             )
             v

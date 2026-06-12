@@ -65,6 +65,23 @@ tests =
                 )
                     @?= Just (DisableWithPriority (ServiceName "docker") (unsafePriority 100))
             ]
+        , testGroup
+            "ServiceBaseState JSON"
+            [ testCase "encodes Enabled as \"enabled\"" $
+                encode Enabled @?= "\"enabled\""
+            , testCase "encodes Disabled as \"disabled\"" $
+                encode Disabled @?= "\"disabled\""
+            , testCase "decodes \"enabled\" to Enabled" $
+                decode "\"enabled\"" @?= Just Enabled
+            , testCase "decodes \"disabled\" to Disabled" $
+                decode "\"disabled\"" @?= Just Disabled
+            , testCase "rejects unknown base state" $
+                (decode "\"sometimes\"" :: Maybe ServiceBaseState) @?= Nothing
+            , testCase "round-trips Enabled" $
+                decode (encode Enabled) @?= Just Enabled
+            , testCase "round-trips Disabled" $
+                decode (encode Disabled) @?= Just Disabled
+            ]
         ]
 
 {- | Test helper: construct a Priority without the Either wrapper.

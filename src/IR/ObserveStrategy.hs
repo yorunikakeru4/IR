@@ -12,7 +12,7 @@ import Data.Aeson
 import Data.Aeson.Types (Parser)
 import Data.Text (Text)
 import qualified Data.Text as T
-import IR.Domain.Error (DomainError (InvalidInterval))
+import IR.Domain.Error (DomainError (InvalidInterval), renderDomainError)
 
 -- | Polling interval in milliseconds.
 newtype IntervalMs = IntervalMs Int
@@ -42,5 +42,5 @@ instance FromJSON ObserveStrategy where
         case t of
             "poll" -> do
                 ms <- o .: "interval_ms"
-                either (fail . show) (pure . Poll) (mkIntervalMs ms)
+                either (fail . T.unpack . renderDomainError) (pure . Poll) (mkIntervalMs ms)
             _unknownType -> fail $ "unknown observe strategy: " <> T.unpack t

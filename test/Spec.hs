@@ -1,5 +1,6 @@
 module Main (main) where
 
+import qualified IR.Domain.ErrorSpec
 import qualified IR.Domain.NetworkSpec
 import qualified IR.Domain.PowerSpec
 import qualified IR.Domain.ProcessSpec
@@ -13,7 +14,8 @@ main =
     defaultMain $
         testGroup
             "IR"
-            [ IR.Domain.NetworkSpec.tests
+            [ IR.Domain.ErrorSpec.tests
+            , IR.Domain.NetworkSpec.tests
             , IR.Domain.PowerSpec.tests
             , IR.Domain.ProcessSpec.tests
             , IR.Domain.ServiceSpec.tests

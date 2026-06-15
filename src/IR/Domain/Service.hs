@@ -18,7 +18,7 @@ import Data.Aeson.Types (Parser)
 import Data.Maybe (fromMaybe)
 import Data.Text (Text)
 import qualified Data.Text as T
-import IR.Domain.Error (DomainError, mkName, mkPercent)
+import IR.Domain.Error (DomainError, mkName, mkPercent, renderDomainError)
 
 -- | Name of a system service (e.g. systemd unit name without the @.service@ suffix).
 newtype ServiceName = ServiceName Text
@@ -75,17 +75,17 @@ instance FromJSON Action where
         case t of
             "service_enable" -> do
                 raw <- o .: "name"
-                name <- either (fail . show) pure (mkServiceName raw)
+                name <- either (fail . T.unpack . renderDomainError) pure (mkServiceName raw)
                 -- Priority defaults to 100 when absent (backwards compatibility).
                 p <- fromMaybe 100 <$> o .:? "priority"
-                priority <- either (fail . show) pure (mkPriority p)
+                priority <- either (fail . T.unpack . renderDomainError) pure (mkPriority p)
                 pure (EnableWithPriority name priority)
             "service_disable" -> do
                 raw <- o .: "name"
-                name <- either (fail . show) pure (mkServiceName raw)
+                name <- either (fail . T.unpack . renderDomainError) pure (mkServiceName raw)
                 -- Priority defaults to 100 when absent (backwards compatibility).
                 p <- fromMaybe 100 <$> o .:? "priority"
-                priority <- either (fail . show) pure (mkPriority p)
+                priority <- either (fail . T.unpack . renderDomainError) pure (mkPriority p)
                 pure (DisableWithPriority name priority)
             _unknownType -> fail $ "unknown service action: " <> T.unpack t
 

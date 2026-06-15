@@ -16,7 +16,7 @@ import Data.Aeson
 import Data.Aeson.Types (Parser)
 import Data.Text (Text)
 import qualified Data.Text as T
-import IR.Domain.Error (DomainError (StrategyConflict), mkPercent, mkThreshold)
+import IR.Domain.Error (DomainError (StrategyConflict), mkPercent, mkThreshold, renderDomainError)
 import IR.ObserveStrategy (ObserveStrategy)
 
 newtype CpuLoadThreshold = CpuLoadThreshold Double
@@ -81,14 +81,14 @@ instance FromJSON Condition where
         case t of
             "cpu_load" -> do
                 raw <- o .: "threshold"
-                threshold <- either (fail . show) pure (mkCpuLoadThreshold raw)
+                threshold <- either (fail . T.unpack . renderDomainError) pure (mkCpuLoadThreshold raw)
                 CpuLoad threshold <$> o .:? "observe"
             "battery_below" -> do
                 raw <- o .: "percent"
-                percent <- either (fail . show) pure (mkBatteryPercent raw)
+                percent <- either (fail . T.unpack . renderDomainError) pure (mkBatteryPercent raw)
                 BatteryBelow percent <$> o .:? "observe"
             "battery_above" -> do
                 raw <- o .: "percent"
-                percent <- either (fail . show) pure (mkBatteryPercent raw)
+                percent <- either (fail . T.unpack . renderDomainError) pure (mkBatteryPercent raw)
                 BatteryAbove percent <$> o .:? "observe"
             _unknownType -> fail $ "unknown system condition: " <> T.unpack t

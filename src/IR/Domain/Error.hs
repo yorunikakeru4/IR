@@ -1,6 +1,9 @@
+{-# LANGUAGE OverloadedStrings #-}
+
 -- | Shared errors produced while constructing domain values.
 module IR.Domain.Error (
     DomainError (..),
+    renderDomainError,
     mkThreshold,
     mkPercent,
     mkName,
@@ -8,6 +11,7 @@ module IR.Domain.Error (
 ) where
 
 import Data.Text (Text)
+import qualified Data.Text as T
 
 data DomainError
     = EmptyName
@@ -17,6 +21,17 @@ data DomainError
     | InvalidPercent Int
     | StrategyConflict
     deriving (Eq, Show)
+
+renderDomainError :: DomainError -> Text
+renderDomainError EmptyName = "name must not be empty"
+renderDomainError (EmptyList what) = what <> " list must not be empty"
+renderDomainError (InvalidInterval ms) =
+    "interval must be positive, got " <> T.pack (show ms) <> " ms"
+renderDomainError (InvalidThreshold t) =
+    "threshold must be between 0.0 and 1.0, got " <> T.pack (show t)
+renderDomainError (InvalidPercent p) =
+    "percent must be between 0 and 100, got " <> T.pack (show p)
+renderDomainError StrategyConflict = "observation strategy was already set"
 
 mkThreshold :: (Double -> a) -> Double -> Either DomainError a
 mkThreshold ctor t

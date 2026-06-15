@@ -21,10 +21,11 @@ import Data.Aeson
 import Data.Char (toLower)
 import Data.List (stripPrefix)
 import Data.Text (Text)
+import qualified Data.Text as T
 import GHC.Generics (Generic)
 import IR.Action (Action)
 import IR.Condition (Condition)
-import IR.Domain.Error (DomainError, mkName)
+import IR.Domain.Error (DomainError, mkName, renderDomainError)
 import qualified IR.Domain.Service as Service
 import IR.Policy (Policy)
 
@@ -104,7 +105,7 @@ instance ToJSON ProfileName where
 instance FromJSON ProfileName where
     parseJSON value = do
         name <- parseJSON value
-        either (fail . show) pure (mkProfileName name)
+        either (fail . T.unpack . renderDomainError) pure (mkProfileName name)
 
 instance ToJSON ServiceSectionName where
     toJSON (ServiceSectionName t) = toJSON t
@@ -112,7 +113,7 @@ instance ToJSON ServiceSectionName where
 instance FromJSON ServiceSectionName where
     parseJSON value = do
         name <- parseJSON value
-        either (fail . show) pure (mkServiceSectionName name)
+        either (fail . T.unpack . renderDomainError) pure (mkServiceSectionName name)
 
 profileOptions :: Options
 profileOptions =

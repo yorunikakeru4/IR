@@ -49,6 +49,7 @@ test-suite frogos-ir-test
   hs-source-dirs:   test
   main-is:          Spec.hs
   other-modules:
+    IR.Domain.ErrorSpec
     IR.Domain.NetworkSpec
     IR.Domain.PowerSpec
     IR.Domain.ProcessSpec

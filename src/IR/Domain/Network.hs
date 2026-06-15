@@ -16,7 +16,7 @@ import Data.Aeson.Types (Parser)
 import Data.Text (Text)
 import qualified Data.Text as T
 import Data.Word (Word16)
-import IR.Domain.Error (DomainError (EmptyList))
+import IR.Domain.Error (DomainError (EmptyList), renderDomainError)
 
 -- | A TCP/UDP port number (0–65535).
 newtype Port = Port Word16
@@ -80,9 +80,9 @@ instance FromJSON Policy where
         case t of
             "allow_ports" -> do
                 ps <- o .: "values"
-                either (fail . show) pure (allowPortsPolicy ps)
+                either (fail . T.unpack . renderDomainError) pure (allowPortsPolicy ps)
             "fallback" -> do
                 primary <- o .: "primary"
                 alts <- o .: "alternatives"
-                either (fail . show) pure (fallbackPolicy primary alts)
+                either (fail . T.unpack . renderDomainError) pure (fallbackPolicy primary alts)
             _unknownType -> fail $ "unknown network policy: " <> T.unpack t

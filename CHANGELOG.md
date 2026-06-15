@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- `IR.Domain.Error`: `renderDomainError :: DomainError -> Text` — human-readable message for each error constructor. Used by all `FromJSON` parsers instead of `show` dumps.
+- All `FromJSON` instances in `IR.Domain.Network`, `IR.Domain.Process`, `IR.Domain.Service`, `IR.Domain.System`, `IR.ObserveStrategy`, and `IR.Types` now call `renderDomainError` via `fail` instead of `show`. Parse errors are now human-readable.
+
 - `IR.Domain.Error`: `StrategyConflict` — attaching an observation strategy to a condition leaf that already has one now fails instead of silently replacing it.
 - `IR.Domain.Process.attachStrategy` and `IR.Domain.System.attachStrategy` — attach an observation strategy within the owning domain module and return `Either DomainError Condition`.
 - `IR.Domain.Network`: `Resource` — new sum type with `PortResource Port` constructor. `Fallback` policy constructor changed from `Fallback Port [Port]` to `Fallback Resource [Resource]`; `fallbackPolicy` signature updated accordingly. JSON shape changed: `"target"`/`"strategy"` keys replaced by `"primary"`/`"alternatives"` with `Resource` objects (`{"type":"port","value":N}`).

@@ -18,7 +18,7 @@ import Data.Aeson
 import Data.Aeson.Types (Parser)
 import Data.Text (Text)
 import qualified Data.Text as T
-import IR.Domain.Error (DomainError (StrategyConflict), mkName)
+import IR.Domain.Error (DomainError (StrategyConflict), mkName, renderDomainError)
 import IR.ObserveStrategy (IntervalMs, ObserveStrategy (..), intervalMilliseconds, mkIntervalMs)
 
 -- | Name of a system process as it appears in the process table.
@@ -55,6 +55,6 @@ instance FromJSON Condition where
         case t of
             "process_running" -> do
                 name <- o .: "name"
-                processName <- either (fail . show) pure (mkProcessName name)
+                processName <- either (fail . T.unpack . renderDomainError) pure (mkProcessName name)
                 ProcessRunning processName <$> o .:? "observe"
             _unknownType -> fail $ "unknown process condition: " <> T.unpack t

@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- `IR.Domain.Error`: `DuplicateCondition` — a profile body contained more than one `when` condition; `renderDomainError` returns `"a profile may have at most one when condition"`.
+
 - `IR.Domain.Error`: `renderDomainError :: DomainError -> Text` — human-readable message for each error constructor. Used by all `FromJSON` parsers instead of `show` dumps.
 - All `FromJSON` instances in `IR.Domain.Network`, `IR.Domain.Process`, `IR.Domain.Service`, `IR.Domain.System`, `IR.ObserveStrategy`, and `IR.Types` now call `renderDomainError` via `fail` instead of `show`. Parse errors are now human-readable.
 

@@ -20,6 +20,7 @@ data DomainError
     | InvalidThreshold Double
     | InvalidPercent Int
     | StrategyConflict
+    | DuplicateCondition
     deriving (Eq, Show)
 
 renderDomainError :: DomainError -> Text
@@ -32,6 +33,7 @@ renderDomainError (InvalidThreshold t) =
 renderDomainError (InvalidPercent p) =
     "percent must be between 0 and 100, got " <> T.pack (show p)
 renderDomainError StrategyConflict = "observation strategy was already set"
+renderDomainError DuplicateCondition = "a profile may have at most one when condition"
 
 mkThreshold :: (Double -> a) -> Double -> Either DomainError a
 mkThreshold ctor t

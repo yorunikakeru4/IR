@@ -8,7 +8,7 @@ See [CODESTYLE.md](CODESTYLE.md) for code quality, comments, Haskell, Nix, and t
 
 - Don’t make major or fundamental changes without verification or a plan.
 - After changes use `nix fmt` for formatting.
-- Before committing use `nix flake check --keep-going --print-build-logs` and `cabal test`.
+- Before committing use `stan --no-default`, `nix flake check --keep-going --print-build-logs` and `cabal test`.
 - For checking issues/PRs use `tea` instead of `gh`.
 - To view a single issue with body: `tea issues --fields "index,title,body" <number>`
 - Don’t commit docs from superpowers

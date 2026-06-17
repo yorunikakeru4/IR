@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- `IR.Domain.Service`: `actionName :: Action -> ServiceName` and `actionPriority :: Action -> Priority` — accessors for the common fields of `EnableWithPriority` and `DisableWithPriority`.
+
 - `IR.Domain.Error`: `DuplicateCondition` — a profile body contained more than one `when` condition; `renderDomainError` returns `"a profile may have at most one when condition"`.
 
 - `IR.Domain.Error`: `renderDomainError :: DomainError -> Text` — human-readable message for each error constructor. Used by all `FromJSON` parsers instead of `show` dumps.

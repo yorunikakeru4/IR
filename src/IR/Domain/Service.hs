@@ -9,6 +9,8 @@ module IR.Domain.Service (
     mkPriority,
     priorityInt,
     Action (..),
+    actionName,
+    actionPriority,
     ServiceBaseState (..),
 )
 where
@@ -54,6 +56,14 @@ data Action
     = EnableWithPriority ServiceName Priority
     | DisableWithPriority ServiceName Priority
     deriving (Eq, Show)
+
+actionName :: Action -> ServiceName
+actionName (EnableWithPriority n _) = n
+actionName (DisableWithPriority n _) = n
+
+actionPriority :: Action -> Priority
+actionPriority (EnableWithPriority _ p) = p
+actionPriority (DisableWithPriority _ p) = p
 
 instance ToJSON Action where
     toJSON (EnableWithPriority (ServiceName n) p) =

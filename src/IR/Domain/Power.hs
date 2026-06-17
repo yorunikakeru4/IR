@@ -21,7 +21,7 @@ data PowerProfile
     = Performance
     | Balanced
     | PowerSave
-    deriving (Eq, Show, Generic)
+    deriving (Eq, Ord, Show, Generic)
 
 parsePowerProfile :: Text -> Either DomainError PowerProfile
 parsePowerProfile "performance" = Right Performance

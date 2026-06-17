@@ -3,6 +3,7 @@
 ## Unreleased
 
 - `IR.Domain.Power`: `parsePowerProfile :: Text -> Either DomainError PowerProfile` — parse a power profile name; returns `Left (UnknownPowerProfile t)` for unrecognised strings.
+- `IR.Domain.Power`: `renderPowerProfile :: PowerProfile -> Text` — inverse of `parsePowerProfile`; returns the canonical lowercase profile name.
 - `IR.Domain.Error`: `UnknownPowerProfile Text` — new constructor for unrecognised power profile names.
 
 - `IR.Domain.Service`: `actionName :: Action -> ServiceName` and `actionPriority :: Action -> Priority` — accessors for the common fields of `EnableWithPriority` and `DisableWithPriority`.

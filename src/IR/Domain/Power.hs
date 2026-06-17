@@ -4,6 +4,7 @@
 module IR.Domain.Power (
     PowerProfile (..),
     parsePowerProfile,
+    renderPowerProfile,
     Action (..),
 )
 where
@@ -27,6 +28,11 @@ parsePowerProfile "performance" = Right Performance
 parsePowerProfile "balanced" = Right Balanced
 parsePowerProfile "powersave" = Right PowerSave
 parsePowerProfile t = Left (UnknownPowerProfile t)
+
+renderPowerProfile :: PowerProfile -> Text
+renderPowerProfile Performance = "performance"
+renderPowerProfile Balanced = "balanced"
+renderPowerProfile PowerSave = "powersave"
 
 data Action
     = SetPowerProfile PowerProfile

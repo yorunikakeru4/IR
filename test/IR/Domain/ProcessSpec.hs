@@ -53,8 +53,9 @@ tests =
                     fmap intervalMilliseconds (mkIntervalMs (intervalMilliseconds ms))
                         === Right (intervalMilliseconds ms)
             , testProperty "mkIntervalMs rejects non-positive interval" $
-                \i -> i <= 0 ==>
-                    mkIntervalMs i === Left (InvalidInterval i)
+                \i ->
+                    i <= 0 ==>
+                        mkIntervalMs i === Left (InvalidInterval i)
             , testProperty "attachStrategy sets strategy on strategy-free condition" $
                 \name s ->
                     attachStrategy s (ProcessRunning name Nothing)

@@ -12,7 +12,7 @@ import IR.ObserveStrategy (IntervalMs, ObserveStrategy (..), intervalMillisecond
 import IR.Types (ProfileName, ServiceSectionName, mkProfileName, mkServiceSectionName, profileNameText, serviceSectionNameText)
 import Test.QuickCheck
 
-requireRight :: Show e => Either e a -> a
+requireRight :: (Show e) => Either e a -> a
 requireRight (Right x) = x
 requireRight (Left e) = error ("Arbitraries: unexpected Left: " <> show e)
 

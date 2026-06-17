@@ -79,8 +79,9 @@ tests =
                     fmap priorityInt (mkPriority (priorityInt p))
                         === Right (priorityInt p)
             , testProperty "mkPriority rejects out-of-range values" $
-                \i -> (i < 0 || i > 100) ==>
-                    mkPriority i === Left (InvalidPercent i)
+                \i ->
+                    (i < 0 || i > 100) ==>
+                        mkPriority i === Left (InvalidPercent i)
             , testProperty "JSON roundtrip for Action" $
                 \(a :: Action) -> decode (encode a) === Just a
             ]

@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- `IR.Domain.Power`: `parsePowerProfile :: Text -> Either DomainError PowerProfile` — parse a power profile name; returns `Left (UnknownPowerProfile t)` for unrecognised strings.
+- `IR.Domain.Error`: `UnknownPowerProfile Text` — new constructor for unrecognised power profile names.
+
 - `IR.Domain.Service`: `actionName :: Action -> ServiceName` and `actionPriority :: Action -> Priority` — accessors for the common fields of `EnableWithPriority` and `DisableWithPriority`.
 
 - `IR.Domain.Error`: `DuplicateCondition` — a profile body contained more than one `when` condition; `renderDomainError` returns `"a profile may have at most one when condition"`.

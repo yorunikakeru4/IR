@@ -21,6 +21,7 @@ data DomainError
     | InvalidPercent Int
     | StrategyConflict
     | DuplicateCondition
+    | UnknownPowerProfile Text
     deriving (Eq, Show)
 
 renderDomainError :: DomainError -> Text
@@ -34,6 +35,7 @@ renderDomainError (InvalidPercent p) =
     "percent must be between 0 and 100, got " <> T.pack (show p)
 renderDomainError StrategyConflict = "observation strategy was already set"
 renderDomainError DuplicateCondition = "a profile may have at most one when condition"
+renderDomainError (UnknownPowerProfile t) = "unrecognized power profile: " <> t
 
 mkThreshold :: (Double -> a) -> Double -> Either DomainError a
 mkThreshold ctor t

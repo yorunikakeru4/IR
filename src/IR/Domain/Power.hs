@@ -3,6 +3,7 @@
 
 module IR.Domain.Power (
     PowerProfile (..),
+    parsePowerProfile,
     Action (..),
 )
 where
@@ -13,12 +14,19 @@ import Data.Char (toLower)
 import Data.Text (Text)
 import qualified Data.Text as T
 import GHC.Generics (Generic)
+import IR.Domain.Error (DomainError (..))
 
 data PowerProfile
     = Performance
     | Balanced
     | PowerSave
     deriving (Eq, Show, Generic)
+
+parsePowerProfile :: Text -> Either DomainError PowerProfile
+parsePowerProfile "performance" = Right Performance
+parsePowerProfile "balanced" = Right Balanced
+parsePowerProfile "powersave" = Right PowerSave
+parsePowerProfile t = Left (UnknownPowerProfile t)
 
 data Action
     = SetPowerProfile PowerProfile

@@ -1,12 +1,15 @@
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE ScopedTypeVariables #-}
 
 module IR.Domain.ServiceSpec (tests) where
 
 import Data.Aeson (decode, encode)
+import IR.Arbitraries ()
 import IR.Domain.Error (DomainError (..))
 import IR.Domain.Service
 import Test.Tasty
 import Test.Tasty.HUnit
+import Test.Tasty.QuickCheck
 
 tests :: TestTree
 tests =
@@ -64,6 +67,22 @@ tests =
                     Maybe Action
                 )
                     @?= Just (DisableWithPriority (ServiceName "docker") (unsafePriority 100))
+            ]
+        , testGroup
+            "properties"
+            [ testProperty "serviceNameText . mkServiceName roundtrips non-empty text" $
+                \name ->
+                    fmap serviceNameText (mkServiceName (serviceNameText name))
+                        === Right (serviceNameText name)
+            , testProperty "priorityInt . mkPriority roundtrips valid priority" $
+                \p ->
+                    fmap priorityInt (mkPriority (priorityInt p))
+                        === Right (priorityInt p)
+            , testProperty "mkPriority rejects out-of-range values" $
+                \i -> (i < 0 || i > 100) ==>
+                    mkPriority i === Left (InvalidPercent i)
+            , testProperty "JSON roundtrip for Action" $
+                \(a :: Action) -> decode (encode a) === Just a
             ]
         , testGroup
             "ServiceBaseState JSON"

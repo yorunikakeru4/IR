@@ -1,14 +1,17 @@
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE ScopedTypeVariables #-}
 
 module IR.Domain.SystemSpec (tests) where
 
 import Data.Aeson (decode, encode)
 import qualified Data.ByteString.Lazy.Char8 as LBS
+import IR.Arbitraries ()
 import IR.Domain.Error
 import IR.Domain.System
 import IR.ObserveStrategy (ObserveStrategy (..), mkIntervalMs)
 import Test.Tasty
 import Test.Tasty.HUnit
+import Test.Tasty.QuickCheck
 
 tests :: TestTree
 tests =
@@ -55,6 +58,29 @@ tests =
                 @?= Left StrategyConflict
             attachStrategy newStrategy (BatteryAbove percent (Just oldStrategy))
                 @?= Left StrategyConflict
+        , testGroup
+            "properties"
+            [ testProperty "cpuLoadThresholdValue . mkCpuLoadThreshold roundtrips valid threshold" $
+                \t ->
+                    fmap cpuLoadThresholdValue (mkCpuLoadThreshold (cpuLoadThresholdValue t))
+                        === Right (cpuLoadThresholdValue t)
+            , testProperty "batteryPercentValue . mkBatteryPercent roundtrips valid percent" $
+                \p ->
+                    fmap batteryPercentValue (mkBatteryPercent (batteryPercentValue p))
+                        === Right (batteryPercentValue p)
+            , testProperty "attachStrategy succeeds on every strategy-free system condition" $
+                \t p s ->
+                    attachStrategy s (CpuLoad t Nothing) === Right (CpuLoad t (Just s))
+                        .&&. attachStrategy s (BatteryBelow p Nothing) === Right (BatteryBelow p (Just s))
+                        .&&. attachStrategy s (BatteryAbove p Nothing) === Right (BatteryAbove p (Just s))
+            , testProperty "attachStrategy rejects every system condition with existing strategy" $
+                \old new t p ->
+                    attachStrategy new (CpuLoad t (Just old)) === Left StrategyConflict
+                        .&&. attachStrategy new (BatteryBelow p (Just old)) === Left StrategyConflict
+                        .&&. attachStrategy new (BatteryAbove p (Just old)) === Left StrategyConflict
+            , testProperty "JSON roundtrip for Condition" $
+                \(c :: Condition) -> decode (encode c) === Just c
+            ]
         ]
 
 expectRight :: (Show errorValue) => Either errorValue value -> IO value

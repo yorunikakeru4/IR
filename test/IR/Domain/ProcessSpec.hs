@@ -1,13 +1,16 @@
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE ScopedTypeVariables #-}
 
 module IR.Domain.ProcessSpec (tests) where
 
-import Data.Aeson (decode)
+import Data.Aeson (decode, encode)
 import qualified Data.ByteString.Lazy.Char8 as LBS
+import IR.Arbitraries ()
 import IR.Domain.Error
 import IR.Domain.Process
 import Test.Tasty
 import Test.Tasty.HUnit
+import Test.Tasty.QuickCheck
 
 tests :: TestTree
 tests =
@@ -39,6 +42,30 @@ tests =
             newStrategy <- expectRight (Poll <$> mkIntervalMs 500)
             attachStrategy newStrategy (ProcessRunning name (Just oldStrategy))
                 @?= Left StrategyConflict
+        , testGroup
+            "properties"
+            [ testProperty "processNameText . mkProcessName roundtrips non-empty text" $
+                \name ->
+                    fmap processNameText (mkProcessName (processNameText name))
+                        === Right (processNameText name)
+            , testProperty "intervalMilliseconds . mkIntervalMs roundtrips positive interval" $
+                \ms ->
+                    fmap intervalMilliseconds (mkIntervalMs (intervalMilliseconds ms))
+                        === Right (intervalMilliseconds ms)
+            , testProperty "mkIntervalMs rejects non-positive interval" $
+                \i -> i <= 0 ==>
+                    mkIntervalMs i === Left (InvalidInterval i)
+            , testProperty "attachStrategy sets strategy on strategy-free condition" $
+                \name s ->
+                    attachStrategy s (ProcessRunning name Nothing)
+                        === Right (ProcessRunning name (Just s))
+            , testProperty "attachStrategy rejects condition with existing strategy" $
+                \name old new ->
+                    attachStrategy new (ProcessRunning name (Just old))
+                        === Left StrategyConflict
+            , testProperty "JSON roundtrip for Condition" $
+                \(c :: Condition) -> decode (encode c) === Just c
+            ]
         ]
 
 expectRight :: (Show errorValue) => Either errorValue value -> IO value

@@ -5,10 +5,12 @@ module IR.TypesSpec (tests) where
 import Data.Aeson (decode, encode)
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Lazy as BSL
+import IR.Arbitraries ()
 import qualified IR.Domain.Service as Service
 import IR.Types
 import Test.Tasty
 import Test.Tasty.HUnit
+import Test.Tasty.QuickCheck
 
 tests :: TestTree
 tests =
@@ -25,6 +27,17 @@ tests =
             , testCase "omits baseState key when absent" $
                 assertBool "unexpected baseState key" $
                     not ("\"baseState\"" `BS.isInfixOf` BSL.toStrict (encode (section Nothing)))
+            ]
+        , testGroup
+            "properties"
+            [ testProperty "profileNameText . mkProfileName roundtrips non-empty text" $
+                \name ->
+                    fmap profileNameText (mkProfileName (profileNameText name))
+                        === Right (profileNameText name)
+            , testProperty "serviceSectionNameText . mkServiceSectionName roundtrips non-empty text" $
+                \name ->
+                    fmap serviceSectionNameText (mkServiceSectionName (serviceSectionNameText name))
+                        === Right (serviceSectionNameText name)
             ]
         ]
 

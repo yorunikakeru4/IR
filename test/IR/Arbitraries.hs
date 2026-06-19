@@ -24,6 +24,14 @@ instance Arbitrary Process.ProcessName where
         , Right candidate <- [Process.mkProcessName (T.pack str)]
         ]
 
+instance Arbitrary Process.AppName where
+    arbitrary = requireRight . Process.mkAppName . T.pack <$> listOf1 arbitrary
+    shrink name =
+        [ candidate
+        | str <- shrink (T.unpack (Process.appNameText name))
+        , Right candidate <- [Process.mkAppName (T.pack str)]
+        ]
+
 instance Arbitrary IntervalMs where
     arbitrary = requireRight . mkIntervalMs . getPositive <$> arbitrary
     shrink ms =
@@ -53,10 +61,17 @@ instance Arbitrary System.BatteryPercent where
         ]
 
 instance Arbitrary Process.Condition where
-    arbitrary = Process.ProcessRunning <$> arbitrary <*> arbitrary
+    arbitrary =
+        oneof
+            [ Process.ProcessRunning <$> arbitrary <*> arbitrary
+            , Process.AppRunning <$> arbitrary <*> arbitrary
+            ]
     shrink (Process.ProcessRunning name obs) =
         [Process.ProcessRunning name' obs | name' <- shrink name]
             <> [Process.ProcessRunning name obs' | obs' <- shrink obs]
+    shrink (Process.AppRunning name obs) =
+        [Process.AppRunning name' obs | name' <- shrink name]
+            <> [Process.AppRunning name obs' | obs' <- shrink obs]
 
 instance Arbitrary System.Condition where
     arbitrary =

@@ -36,6 +36,7 @@ instance FromJSON Condition where
                 t <- o .: "type" :: Parser Text
                 case t of
                     "process_running" -> ProcessCondition <$> parseJSON v
+                    "app_running" -> ProcessCondition <$> parseJSON v
                     "cpu_load" -> SystemCondition <$> parseJSON v
                     "battery_below" -> SystemCondition <$> parseJSON v
                     "battery_above" -> SystemCondition <$> parseJSON v

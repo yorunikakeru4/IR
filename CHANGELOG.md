@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- `IR.Domain.Process`: `AppName` newtype with `mkAppName :: Text -> Either DomainError AppName` and `appNameText :: AppName -> Text` — represents a FrogOS app/package identity.
+- `IR.Domain.Process`: `AppRunning AppName (Maybe ObserveStrategy)` — new `Condition` constructor; true while any process belonging to the named FrogOS app is running. JSON type string `"app_running"`.
+- `IR.Domain.Process.attachStrategy` — handles the new `AppRunning` constructor.
+- `IR.Condition`: `FromJSON` routes `"app_running"` to `ProcessCondition`.
+
 - `IR.Domain.Power`: `PowerProfile` now derives `Ord`.
 - `IR.Domain.Power`: `parsePowerProfile :: Text -> Either DomainError PowerProfile` — parse a power profile name; returns `Left (UnknownPowerProfile t)` for unrecognised strings.
 - `IR.Domain.Power`: `renderPowerProfile :: PowerProfile -> Text` — inverse of `parsePowerProfile`; returns the canonical lowercase profile name.

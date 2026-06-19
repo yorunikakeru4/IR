@@ -31,6 +31,24 @@ tests =
         , testCase "empty process name JSON is rejected" $
             (decode (LBS.pack "{\"type\":\"process_running\",\"name\":\"\"}") :: Maybe Condition)
                 @?= Nothing
+        , testCase "rejects empty app name" $
+            mkAppName "" @?= Left EmptyName
+        , testCase "accepts non-empty app name" $
+            fmap appNameText (mkAppName "steam") @?= Right "steam"
+        , testCase "empty app name JSON is rejected" $
+            (decode (LBS.pack "{\"type\":\"app_running\",\"name\":\"\"}") :: Maybe Condition)
+                @?= Nothing
+        , testCase "attachStrategy sets a missing app observation strategy" $ do
+            name <- expectRight (mkAppName "steam")
+            newStrategy <- expectRight (Poll <$> mkIntervalMs 500)
+            attachStrategy newStrategy (AppRunning name Nothing)
+                @?= Right (AppRunning name (Just newStrategy))
+        , testCase "attachStrategy rejects an existing app observation strategy" $ do
+            name <- expectRight (mkAppName "steam")
+            oldStrategy <- expectRight (Poll <$> mkIntervalMs 250)
+            newStrategy <- expectRight (Poll <$> mkIntervalMs 500)
+            attachStrategy newStrategy (AppRunning name (Just oldStrategy))
+                @?= Left StrategyConflict
         , testCase "attachStrategy sets a missing process observation strategy" $ do
             name <- expectRight (mkProcessName "steam")
             newStrategy <- expectRight (Poll <$> mkIntervalMs 500)
@@ -56,6 +74,10 @@ tests =
                 \i ->
                     i <= 0 ==>
                         mkIntervalMs i === Left (InvalidInterval i)
+            , testProperty "appNameText . mkAppName roundtrips non-empty text" $
+                \name ->
+                    fmap appNameText (mkAppName (appNameText name))
+                        === Right (appNameText name)
             , testProperty "attachStrategy sets strategy on strategy-free condition" $
                 \name s ->
                     attachStrategy s (ProcessRunning name Nothing)
@@ -63,6 +85,14 @@ tests =
             , testProperty "attachStrategy rejects condition with existing strategy" $
                 \name old new ->
                     attachStrategy new (ProcessRunning name (Just old))
+                        === Left StrategyConflict
+            , testProperty "attachStrategy sets strategy on strategy-free app condition" $
+                \name s ->
+                    attachStrategy s (AppRunning name Nothing)
+                        === Right (AppRunning name (Just s))
+            , testProperty "attachStrategy rejects app condition with existing strategy" $
+                \name old new ->
+                    attachStrategy new (AppRunning name (Just old))
                         === Left StrategyConflict
             , testProperty "JSON roundtrip for Condition" $
                 \(c :: Condition) -> decode (encode c) === Just c

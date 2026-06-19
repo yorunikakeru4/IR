@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- `IR.Domain.Package`: new module. `PackageName` newtype with `mkPackageName :: Text -> Either DomainError PackageName` and `packageNameText :: PackageName -> Text`. `ToJSON`/`FromJSON` instances — serialises as a plain JSON string.
+- `IR.Types`: `IRDocument` gains `irPackages :: [PackageName]` (global packages, always installed). `ProfileSection` gains `profilePackages :: [PackageName]` (conditional packages, available while the profile is active). `ServiceSection` gains `serviceSectionPackages :: [PackageName]` (packages associated with the service). All three fields are omitted from JSON when empty and default to `[]` when absent — backward compatible with existing documents.
+
 - `IR.Domain.Process`: `AppName` newtype with `mkAppName :: Text -> Either DomainError AppName` and `appNameText :: AppName -> Text` — represents a FrogOS app/package identity.
 - `IR.Domain.Process`: `AppRunning AppName (Maybe ObserveStrategy)` — new `Condition` constructor; true while any process belonging to the named FrogOS app is running. JSON type string `"app_running"`.
 - `IR.Domain.Process.attachStrategy` — handles the new `AppRunning` constructor.

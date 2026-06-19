@@ -4,6 +4,7 @@ module IR.Arbitraries () where
 
 import qualified Data.Text as T
 import qualified IR.Domain.Network as Network
+import qualified IR.Domain.Package as Package
 import qualified IR.Domain.Power as Power
 import qualified IR.Domain.Process as Process
 import qualified IR.Domain.Service as Service
@@ -15,6 +16,14 @@ import Test.QuickCheck
 requireRight :: (Show e) => Either e a -> a
 requireRight (Right x) = x
 requireRight (Left e) = error ("Arbitraries: unexpected Left: " <> show e)
+
+instance Arbitrary Package.PackageName where
+    arbitrary = requireRight . Package.mkPackageName . T.pack <$> listOf1 arbitrary
+    shrink name =
+        [ candidate
+        | str <- shrink (T.unpack (Package.packageNameText name))
+        , Right candidate <- [Package.mkPackageName (T.pack str)]
+        ]
 
 instance Arbitrary Process.ProcessName where
     arbitrary = requireRight . Process.mkProcessName . T.pack <$> listOf1 arbitrary

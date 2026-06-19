@@ -1,4 +1,4 @@
-{-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE OverloadedStrings #-}
 
 {- | Core IR document structure: the top-level intent representation
 consumed by the FrogOS Planner.
@@ -15,17 +15,18 @@ module IR.Types (
     ProfileSection (..),
     ServiceSection (..),
     IRDocument (..),
+    PackageName,
+    mkPackageName,
+    packageNameText,
 ) where
 
 import Data.Aeson
-import Data.Char (toLower)
-import Data.List (stripPrefix)
 import Data.Text (Text)
 import qualified Data.Text as T
-import GHC.Generics (Generic)
 import IR.Action (Action)
 import IR.Condition (Condition)
 import IR.Domain.Error (DomainError, mkName, renderDomainError)
+import IR.Domain.Package (PackageName, mkPackageName, packageNameText)
 import qualified IR.Domain.Service as Service
 import IR.Policy (Policy)
 
@@ -67,8 +68,9 @@ data ProfileSection = ProfileSection
     , profileCondition :: Maybe Condition
     , profilePolicies :: [Policy]
     , profileActions :: [Action]
+    , profilePackages :: [PackageName]
     }
-    deriving (Eq, Show, Generic)
+    deriving (Eq, Show)
 
 -- | A named group of base state, policies, and actions for a service.
 data ServiceSection = ServiceSection
@@ -76,22 +78,18 @@ data ServiceSection = ServiceSection
     , serviceSectionBaseState :: Maybe Service.ServiceBaseState
     , serviceSectionPolicies :: [Policy]
     , serviceSectionActions :: [Action]
+    , serviceSectionPackages :: [PackageName]
     }
-    deriving (Eq, Show, Generic)
+    deriving (Eq, Show)
 
 -- | The complete IR document serialized as @intent.json@ for each generation.
 data IRDocument = IRDocument
     { irVersion :: IRVersion
+    , irPackages :: [PackageName]
     , irProfiles :: [ProfileSection]
     , irServices :: [ServiceSection]
     }
-    deriving (Eq, Show, Generic)
-
-dropFieldPrefix :: String -> String -> String
-dropFieldPrefix prefix s = case stripPrefix prefix s of
-    Just (c : cs) -> toLower c : cs
-    Just [] -> error $ "dropFieldPrefix: empty field name after stripping " <> show prefix
-    Nothing -> error $ "dropFieldPrefix: " <> show s <> " does not start with " <> show prefix
+    deriving (Eq, Show)
 
 instance ToJSON IRVersion where
     toJSON (IRVersion n) = toJSON n
@@ -115,38 +113,56 @@ instance FromJSON ServiceSectionName where
         name <- parseJSON value
         either (fail . T.unpack . renderDomainError) pure (mkServiceSectionName name)
 
-profileOptions :: Options
-profileOptions =
-    defaultOptions
-        { fieldLabelModifier = dropFieldPrefix "profile"
-        , omitNothingFields = True
-        }
+-- | Serialise a list field, omitting the key entirely when the list is empty.
+omitEmpty :: (ToJSON a, KeyValue e kv) => Key -> [a] -> [kv]
+omitEmpty _ [] = []
+omitEmpty key xs = [key .= xs]
 
 instance ToJSON ProfileSection where
-    toJSON = genericToJSON profileOptions
+    toJSON ps =
+        object $
+            ["name" .= profileName ps, "policies" .= profilePolicies ps, "actions" .= profileActions ps]
+                <> maybe [] (\c -> ["condition" .= c]) (profileCondition ps)
+                <> omitEmpty "packages" (profilePackages ps)
 
 instance FromJSON ProfileSection where
-    parseJSON = genericParseJSON profileOptions
-
-serviceSectionOptions :: Options
-serviceSectionOptions =
-    defaultOptions
-        { fieldLabelModifier = dropFieldPrefix "serviceSection"
-        , omitNothingFields = True
-        }
+    parseJSON = withObject "ProfileSection" $ \o ->
+        ProfileSection
+            <$> o .: "name"
+            <*> o .:? "condition"
+            <*> o .: "policies"
+            <*> o .: "actions"
+            <*> o .:? "packages" .!= []
 
 instance ToJSON ServiceSection where
-    toJSON = genericToJSON serviceSectionOptions
+    toJSON ss =
+        object $
+            [ "name" .= serviceSectionName ss
+            , "policies" .= serviceSectionPolicies ss
+            , "actions" .= serviceSectionActions ss
+            ]
+                <> maybe [] (\b -> ["baseState" .= b]) (serviceSectionBaseState ss)
+                <> omitEmpty "packages" (serviceSectionPackages ss)
 
 instance FromJSON ServiceSection where
-    parseJSON = genericParseJSON serviceSectionOptions
-
-irDocumentOptions :: Options
-irDocumentOptions =
-    defaultOptions{fieldLabelModifier = dropFieldPrefix "ir"}
+    parseJSON = withObject "ServiceSection" $ \o ->
+        ServiceSection
+            <$> o .: "name"
+            <*> o .:? "baseState"
+            <*> o .: "policies"
+            <*> o .: "actions"
+            <*> o .:? "packages" .!= []
 
 instance ToJSON IRDocument where
-    toJSON = genericToJSON irDocumentOptions
+    toJSON doc =
+        object $
+            ["version" .= irVersion doc, "profiles" .= irProfiles doc, "services" .= irServices doc]
+                <> omitEmpty "packages" (irPackages doc)
 
 instance FromJSON IRDocument where
-    parseJSON = genericParseJSON irDocumentOptions
+    parseJSON = withObject "IRDocument" $ \o ->
+        IRDocument
+            <$> o .: "version"
+            <*> o .:? "packages" .!= []
+            <*> o .: "profiles"
+            <*> o .: "services"

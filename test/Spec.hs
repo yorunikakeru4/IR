@@ -2,6 +2,7 @@ module Main (main) where
 
 import qualified IR.Domain.ErrorSpec
 import qualified IR.Domain.NetworkSpec
+import qualified IR.Domain.PackageSpec
 import qualified IR.Domain.PowerSpec
 import qualified IR.Domain.ProcessSpec
 import qualified IR.Domain.ServiceSpec
@@ -16,6 +17,7 @@ main =
             "IR"
             [ IR.Domain.ErrorSpec.tests
             , IR.Domain.NetworkSpec.tests
+            , IR.Domain.PackageSpec.tests
             , IR.Domain.PowerSpec.tests
             , IR.Domain.ProcessSpec.tests
             , IR.Domain.ServiceSpec.tests

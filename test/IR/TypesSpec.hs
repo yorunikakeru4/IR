@@ -29,6 +29,15 @@ tests =
                     not ("\"baseState\"" `BS.isInfixOf` BSL.toStrict (encode (section Nothing)))
             ]
         , testGroup
+            "packages JSON"
+            [ testCase "decodes legacy JSON without packages to empty list" $
+                decode "{\"name\":\"backend\",\"policies\":[],\"actions\":[]}"
+                    @?= Just (section Nothing)
+            , testCase "omits packages key when list is empty" $
+                assertBool "unexpected packages key" $
+                    not ("\"packages\"" `BS.isInfixOf` BSL.toStrict (encode (section Nothing)))
+            ]
+        , testGroup
             "properties"
             [ testProperty "profileNameText . mkProfileName roundtrips non-empty text" $
                 \name ->
@@ -48,6 +57,7 @@ section base =
         , serviceSectionBaseState = base
         , serviceSectionPolicies = []
         , serviceSectionActions = []
+        , serviceSectionPackages = []
         }
   where
     name = either (error . show) id (mkServiceSectionName "backend")

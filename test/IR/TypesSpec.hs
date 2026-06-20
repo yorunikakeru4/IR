@@ -48,6 +48,8 @@ tests =
             , testCase "round-trips emptyModuleMap" $
                 decode (encode emptyDoc) @?= Just emptyDoc
             ]
+        , testCase "currentIRVersion is 4" $
+            currentIRVersion @?= IRVersion 4
         , testGroup
             "properties"
             [ testProperty "profileNameText . mkProfileName roundtrips non-empty text" $

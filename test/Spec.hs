@@ -2,6 +2,7 @@ module Main (main) where
 
 import qualified IR.Domain.ErrorSpec
 import qualified IR.Domain.Module.DockerSpec
+import qualified IR.Domain.Module.NginxSpec
 import qualified IR.Domain.Module.PostgreSQLSpec
 import qualified IR.Domain.ModuleSpec
 import qualified IR.Domain.NetworkSpec
@@ -20,6 +21,7 @@ main =
             "IR"
             [ IR.Domain.ErrorSpec.tests
             , IR.Domain.Module.DockerSpec.tests
+            , IR.Domain.Module.NginxSpec.tests
             , IR.Domain.Module.PostgreSQLSpec.tests
             , IR.Domain.ModuleSpec.tests
             , IR.Domain.NetworkSpec.tests

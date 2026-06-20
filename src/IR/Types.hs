@@ -43,11 +43,11 @@ A version mismatch causes the engine to reject the document and roll back.
 newtype IRVersion = IRVersion Int
     deriving (Eq, Show)
 
-{- | The current IR schema version. Bump this whenever the 'IR.Condition.Condition'
-or 'IR.Action.Action' sums are extended with new constructors.
+{- | The current IR schema version. Bump this whenever the public IR JSON schema
+changes, including condition/action sums and module config shapes.
 -}
 currentIRVersion :: IRVersion
-currentIRVersion = IRVersion 3
+currentIRVersion = IRVersion 4
 
 -- | User-defined name for a profile section.
 newtype ProfileName = ProfileName Text

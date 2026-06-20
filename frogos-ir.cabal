@@ -31,6 +31,7 @@ library
     IR.Domain.Module.Docker
     IR.Domain.Module.Forgejo
     IR.Domain.Module.Nginx
+    IR.Domain.Module.Nginx.VirtualHost
     IR.Domain.Module.PostgreSQL
     IR.Domain.Network
     IR.Domain.Package
@@ -59,6 +60,7 @@ test-suite frogos-ir-test
     IR.Domain.ErrorSpec
     IR.Domain.ModuleSpec
     IR.Domain.Module.DockerSpec
+    IR.Domain.Module.NginxSpec
     IR.Domain.Module.PostgreSQLSpec
     IR.Domain.NetworkSpec
     IR.Domain.PackageSpec

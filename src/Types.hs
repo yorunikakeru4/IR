@@ -42,7 +42,7 @@ newtype IRVersion = IRVersion Int
 changes, including condition/action sums and module config shapes.
 -}
 currentIRVersion :: IRVersion
-currentIRVersion = IRVersion 5
+currentIRVersion = IRVersion 6
 
 -- | User-defined name for a profile section.
 newtype ProfileName = ProfileName Text

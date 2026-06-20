@@ -77,16 +77,16 @@ instance FromJSON ModuleRef where
             <*> o .: "name"
 
 data LifecycleAction
-    = EnableModule ModuleRef
-    | DisableModule ModuleRef
+    = EnableModule ModuleRef Int
+    | DisableModule ModuleRef Int
     | RestartModule ModuleRef
     deriving (Eq, Show)
 
 instance ToJSON LifecycleAction where
-    toJSON (EnableModule ref) =
-        object ["type" .= ("module_enable" :: Text), "module" .= ref]
-    toJSON (DisableModule ref) =
-        object ["type" .= ("module_disable" :: Text), "module" .= ref]
+    toJSON (EnableModule ref p) =
+        object ["type" .= ("module_enable" :: Text), "module" .= ref, "priority" .= p]
+    toJSON (DisableModule ref p) =
+        object ["type" .= ("module_disable" :: Text), "module" .= ref, "priority" .= p]
     toJSON (RestartModule ref) =
         object ["type" .= ("module_restart" :: Text), "module" .= ref]
 
@@ -94,7 +94,7 @@ instance FromJSON LifecycleAction where
     parseJSON = withObject "Module.LifecycleAction" $ \o -> do
         t <- o .: "type" :: Parser Text
         case t of
-            "module_enable" -> EnableModule <$> o .: "module"
-            "module_disable" -> DisableModule <$> o .: "module"
+            "module_enable" -> EnableModule <$> o .: "module" <*> o .:? "priority" .!= 100
+            "module_disable" -> DisableModule <$> o .: "module" <*> o .:? "priority" .!= 100
             "module_restart" -> RestartModule <$> o .: "module"
             _unknown -> fail $ "unknown module action type: " <> T.unpack t

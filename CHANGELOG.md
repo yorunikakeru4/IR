@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- `IR.Domain.Module`: `EnableModule` and `DisableModule` constructors now carry an `Int` priority field (0–100). JSON gains a `"priority"` key; decoding defaults to `100` when absent for backward compatibility. `currentIRVersion` bumped from 5 to 6.
+
 - `IR.Types`: removed `ServiceSectionName`, `ServiceSection`, `mkServiceSectionName`,
   `serviceSectionNameText`, and `irServices`. `IRDocument` JSON no longer contains
   a `services` key. `currentIRVersion` bumped from 4 to 5.

@@ -35,8 +35,8 @@ tests =
         , testCase "omits services key" $
             assertBool "unexpected services key" $
                 not ("\"services\"" `BS.isInfixOf` BSL.toStrict (encode emptyDoc))
-        , testCase "currentIRVersion is 5" $
-            currentIRVersion @?= IRVersion 5
+        , testCase "currentIRVersion is 6" $
+            currentIRVersion @?= IRVersion 6
         , testGroup
             "properties"
             [ testProperty "profileNameText . mkProfileName roundtrips non-empty text" $

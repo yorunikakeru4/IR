@@ -51,16 +51,23 @@ tests =
             "LifecycleAction JSON"
             [ testCase "encodes EnableModule with correct type string" $
                 assertBool "missing module_enable" $
-                    "module_enable" `isInfixOf` BSLC.unpack (encode (EnableModule (ModuleRef DockerDomain (unsafeName "default"))))
-            , testCase "round-trips EnableModule" $
-                let a = EnableModule (ModuleRef DockerDomain (unsafeName "default"))
+                    "module_enable" `isInfixOf` BSLC.unpack (encode (EnableModule (ModuleRef DockerDomain (unsafeName "default")) 100))
+            , testCase "EnableModule encodes priority field" $
+                assertBool "missing priority" $
+                    "\"priority\"" `isInfixOf` BSLC.unpack (encode (EnableModule (ModuleRef DockerDomain (unsafeName "default")) 80))
+            , testCase "round-trips EnableModule with priority" $
+                let a = EnableModule (ModuleRef DockerDomain (unsafeName "default")) 80
                  in decode (encode a) @?= Just a
-            , testCase "round-trips DisableModule" $
-                let a = DisableModule (ModuleRef PostgreSQLDomain (unsafeName "main"))
+            , testCase "round-trips DisableModule with priority" $
+                let a = DisableModule (ModuleRef PostgreSQLDomain (unsafeName "main")) 100
                  in decode (encode a) @?= Just a
             , testCase "round-trips RestartModule" $
                 let a = RestartModule (ModuleRef NginxDomain (unsafeName "web"))
                  in decode (encode a) @?= Just a
+            , testCase "decodes EnableModule without priority field defaults to 100" $
+                decode
+                    "{\"type\":\"module_enable\",\"module\":{\"domain\":\"docker\",\"name\":\"default\"}}"
+                    @?= Just (EnableModule (ModuleRef DockerDomain (unsafeName "default")) 100)
             , testCase "rejects unknown type" $
                 ( decode
                     "{\"type\":\"module_pause\",\"module\":{\"domain\":\"docker\",\"name\":\"default\"}}" ::

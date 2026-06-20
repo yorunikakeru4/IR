@@ -21,6 +21,7 @@ tests =
                         , postgresqlEnable = True
                         , postgresqlPort = Nothing
                         , postgresqlDataDir = Nothing
+                        , postgresqlMaxConnections = Nothing
                         }
              in decode (encode cfg) @?= Just cfg
         , testCase "round-trips full config" $
@@ -31,6 +32,7 @@ tests =
                         , postgresqlEnable = True
                         , postgresqlPort = Just 5432
                         , postgresqlDataDir = Just "/var/lib/postgresql"
+                        , postgresqlMaxConnections = Just 200
                         }
              in decode (encode cfg) @?= Just cfg
         , testCase "rejects empty name in JSON" $
@@ -43,6 +45,12 @@ tests =
                         , postgresqlEnable = False
                         , postgresqlPort = Just 5433
                         , postgresqlDataDir = Nothing
+                        , postgresqlMaxConnections = Nothing
                         }
              in decode (encode cfg) @?= Just cfg
+        , testCase "omits max_connections when absent" $
+            let Right name = mkModuleName "main"
+                cfg = PostgreSQLConfig name True Nothing Nothing Nothing
+             in assertBool "unexpected max_connections key" $
+                    not ("max_connections" `elem` (words (show (encode cfg))))
         ]

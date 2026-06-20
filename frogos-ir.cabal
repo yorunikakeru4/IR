@@ -27,6 +27,7 @@ library
     IR.Action
     IR.Condition
     IR.Domain.Error
+    IR.Domain.Module
     IR.Domain.Network
     IR.Domain.Package
     IR.Domain.Power
@@ -52,6 +53,7 @@ test-suite frogos-ir-test
   other-modules:
     IR.Arbitraries
     IR.Domain.ErrorSpec
+    IR.Domain.ModuleSpec
     IR.Domain.NetworkSpec
     IR.Domain.PackageSpec
     IR.Domain.PowerSpec

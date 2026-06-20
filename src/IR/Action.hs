@@ -10,6 +10,7 @@ import Data.Aeson
 import Data.Aeson.Types (Parser)
 import Data.Text (Text)
 import qualified Data.Text as T
+import qualified IR.Domain.Module as Module
 import qualified IR.Domain.Power as Power
 import qualified IR.Domain.Service as Service
 
@@ -19,6 +20,7 @@ Adding a new action domain requires extending this sum and bumping 'IR.Types.IRV
 data Action
     = ServiceAction Service.Action
     | PowerAction Power.Action
+    | ModuleAction Module.LifecycleAction
     deriving (Eq, Show)
 
 {- | Lift a domain action into the root 'Action' sum.
@@ -33,9 +35,13 @@ instance LiftAction Service.Action where
 instance LiftAction Power.Action where
     liftAction = PowerAction
 
+instance LiftAction Module.LifecycleAction where
+    liftAction = ModuleAction
+
 instance ToJSON Action where
     toJSON (ServiceAction a) = toJSON a
     toJSON (PowerAction a) = toJSON a
+    toJSON (ModuleAction a) = toJSON a
 
 instance FromJSON Action where
     parseJSON v =
@@ -47,6 +53,9 @@ instance FromJSON Action where
                     "service_disable" -> ServiceAction <$> parseJSON v
                     "service_enable" -> ServiceAction <$> parseJSON v
                     "power_profile" -> PowerAction <$> parseJSON v
+                    "module_enable" -> ModuleAction <$> parseJSON v
+                    "module_disable" -> ModuleAction <$> parseJSON v
+                    "module_restart" -> ModuleAction <$> parseJSON v
                     _unknownType -> fail $ "unknown action type: " <> T.unpack t
             )
             v

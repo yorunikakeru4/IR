@@ -1,6 +1,7 @@
 module Main (main) where
 
 import qualified IR.Domain.ErrorSpec
+import qualified IR.Domain.ModuleSpec
 import qualified IR.Domain.NetworkSpec
 import qualified IR.Domain.PackageSpec
 import qualified IR.Domain.PowerSpec
@@ -16,6 +17,7 @@ main =
         testGroup
             "IR"
             [ IR.Domain.ErrorSpec.tests
+            , IR.Domain.ModuleSpec.tests
             , IR.Domain.NetworkSpec.tests
             , IR.Domain.PackageSpec.tests
             , IR.Domain.PowerSpec.tests

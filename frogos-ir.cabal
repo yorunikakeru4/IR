@@ -24,24 +24,24 @@ library
   hs-source-dirs:     src
   default-extensions: StrictData
   exposed-modules:
-    IR.Action
-    IR.Condition
-    IR.Domain.Error
-    IR.Domain.Module
-    IR.Domain.Module.Docker
-    IR.Domain.Module.Forgejo
-    IR.Domain.Module.Nginx
-    IR.Domain.Module.Nginx.VirtualHost
-    IR.Domain.Module.PostgreSQL
-    IR.Domain.Network
-    IR.Domain.Package
-    IR.Domain.Power
-    IR.Domain.Process
-    IR.Domain.Service
-    IR.Domain.System
-    IR.ObserveStrategy
-    IR.Policy
-    IR.Types
+    Action
+    Condition
+    Domain.Error
+    Domain.Module
+    Domain.Module.Docker
+    Domain.Module.Forgejo
+    Domain.Module.Nginx
+    Domain.Module.Nginx.VirtualHost
+    Domain.Module.PostgreSQL
+    Domain.Network
+    Domain.Package
+    Domain.Power
+    Domain.Process
+    Domain.Service
+    Domain.System
+    ObserveStrategy
+    Policy
+    Types
 
   build-depends:
     , aeson  ^>=2.2
@@ -56,19 +56,19 @@ test-suite frogos-ir-test
   hs-source-dirs:   test
   main-is:          Spec.hs
   other-modules:
-    IR.Arbitraries
-    IR.Domain.ErrorSpec
-    IR.Domain.ModuleSpec
-    IR.Domain.Module.DockerSpec
-    IR.Domain.Module.NginxSpec
-    IR.Domain.Module.PostgreSQLSpec
-    IR.Domain.NetworkSpec
-    IR.Domain.PackageSpec
-    IR.Domain.PowerSpec
-    IR.Domain.ProcessSpec
-    IR.Domain.ServiceSpec
-    IR.Domain.SystemSpec
-    IR.TypesSpec
+    Arbitraries
+    Domain.ErrorSpec
+    Domain.ModuleSpec
+    Domain.Module.DockerSpec
+    Domain.Module.NginxSpec
+    Domain.Module.PostgreSQLSpec
+    Domain.NetworkSpec
+    Domain.PackageSpec
+    Domain.PowerSpec
+    Domain.ProcessSpec
+    Domain.ServiceSpec
+    Domain.SystemSpec
+    TypesSpec
 
   build-depends:
     , aeson              ^>=2.2

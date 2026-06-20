@@ -1,34 +1,34 @@
 module Main (main) where
 
-import qualified IR.Domain.ErrorSpec
-import qualified IR.Domain.Module.DockerSpec
-import qualified IR.Domain.Module.NginxSpec
-import qualified IR.Domain.Module.PostgreSQLSpec
-import qualified IR.Domain.ModuleSpec
-import qualified IR.Domain.NetworkSpec
-import qualified IR.Domain.PackageSpec
-import qualified IR.Domain.PowerSpec
-import qualified IR.Domain.ProcessSpec
-import qualified IR.Domain.ServiceSpec
-import qualified IR.Domain.SystemSpec
-import qualified IR.TypesSpec
+import qualified Domain.ErrorSpec
+import qualified Domain.Module.DockerSpec
+import qualified Domain.Module.NginxSpec
+import qualified Domain.Module.PostgreSQLSpec
+import qualified Domain.ModuleSpec
+import qualified Domain.NetworkSpec
+import qualified Domain.PackageSpec
+import qualified Domain.PowerSpec
+import qualified Domain.ProcessSpec
+import qualified Domain.ServiceSpec
+import qualified Domain.SystemSpec
 import Test.Tasty
+import qualified TypesSpec
 
 main :: IO ()
 main =
     defaultMain $
         testGroup
             "IR"
-            [ IR.Domain.ErrorSpec.tests
-            , IR.Domain.Module.DockerSpec.tests
-            , IR.Domain.Module.NginxSpec.tests
-            , IR.Domain.Module.PostgreSQLSpec.tests
-            , IR.Domain.ModuleSpec.tests
-            , IR.Domain.NetworkSpec.tests
-            , IR.Domain.PackageSpec.tests
-            , IR.Domain.PowerSpec.tests
-            , IR.Domain.ProcessSpec.tests
-            , IR.Domain.ServiceSpec.tests
-            , IR.Domain.SystemSpec.tests
-            , IR.TypesSpec.tests
+            [ Domain.ErrorSpec.tests
+            , Domain.Module.DockerSpec.tests
+            , Domain.Module.NginxSpec.tests
+            , Domain.Module.PostgreSQLSpec.tests
+            , Domain.ModuleSpec.tests
+            , Domain.NetworkSpec.tests
+            , Domain.PackageSpec.tests
+            , Domain.PowerSpec.tests
+            , Domain.ProcessSpec.tests
+            , Domain.ServiceSpec.tests
+            , Domain.SystemSpec.tests
+            , TypesSpec.tests
             ]

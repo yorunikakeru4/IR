@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Source modules were flattened by dropping the top-level `IR.` namespace. For example, import `Types` instead of `IR.Types`, and `Domain.Module.Nginx` instead of `IR.Domain.Module.Nginx`.
+
 - `IR.Domain.Module.PostgreSQL`: `PostgreSQLConfig` gains `postgresqlMaxConnections :: Maybe Int` (JSON key `max_connections`, omitted when absent).
 - `IR.Domain.Module.Nginx`: `NginxConfig` gains `nginxHttpPort :: Maybe Int`, `nginxHttpsPort :: Maybe Int`, `nginxDomain :: Maybe Text` (JSON keys `http_port`, `https_port`, `domain`, omitted when absent).
 - `IR.Domain.Module.Forgejo`: `ForgejoConfig` gains `forgejoHttpPort :: Maybe Int`, `forgejoSshPort :: Maybe Int`, `forgejoDomain :: Maybe Text` (JSON keys `http_port`, `ssh_port`, `domain`, omitted when absent).

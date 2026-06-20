@@ -9,7 +9,6 @@ import qualified Domain.NetworkSpec
 import qualified Domain.PackageSpec
 import qualified Domain.PowerSpec
 import qualified Domain.ProcessSpec
-import qualified Domain.ServiceSpec
 import qualified Domain.SystemSpec
 import Test.Tasty
 import qualified TypesSpec
@@ -28,7 +27,6 @@ main =
             , Domain.PackageSpec.tests
             , Domain.PowerSpec.tests
             , Domain.ProcessSpec.tests
-            , Domain.ServiceSpec.tests
             , Domain.SystemSpec.tests
             , TypesSpec.tests
             ]

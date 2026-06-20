@@ -8,6 +8,8 @@ import Data.List (isInfixOf)
 import Domain.Module (mkModuleName)
 import Domain.Module.Nginx
 import Domain.Module.Nginx.VirtualHost
+import qualified Domain.Network as Network
+import Policy (Policy (NetworkPolicy))
 import Test.Tasty
 import Test.Tasty.HUnit
 
@@ -32,6 +34,8 @@ tests =
                                 , vhostProxyPass = Just "http://backend:3000"
                                 }
                             ]
+                        , nginxPolicies =
+                            [NetworkPolicy (requireRight (Network.allowPortsPolicy (Network.ports [80, 443])))]
                         }
              in decode (encode cfg) @?= Just cfg
         , testCase "omits virtual_hosts when empty" $
@@ -44,6 +48,7 @@ tests =
                         , nginxHttpsPort = Nothing
                         , nginxDomain = Nothing
                         , nginxVirtualHosts = []
+                        , nginxPolicies = []
                         }
              in assertBool "unexpected virtual_hosts key" $
                     not ("virtual_hosts" `isInfixOf` BSLC.unpack (encode cfg))

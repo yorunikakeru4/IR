@@ -3,9 +3,10 @@
 module Domain.Module.PostgreSQLSpec (tests) where
 
 import Data.Aeson (decode, encode)
-import Domain.Error (DomainError (..))
 import Domain.Module (mkModuleName)
 import Domain.Module.PostgreSQL
+import qualified Domain.Network as Network
+import Policy (Policy (NetworkPolicy))
 import Test.Tasty
 import Test.Tasty.HUnit
 
@@ -14,7 +15,7 @@ tests =
     testGroup
         "Domain.Module.PostgreSQL"
         [ testCase "round-trips minimal config" $
-            let Right name = mkModuleName "main"
+            let name = requireRight (mkModuleName "main")
                 cfg =
                     PostgreSQLConfig
                         { postgresqlConfigName = name
@@ -22,10 +23,11 @@ tests =
                         , postgresqlPort = Nothing
                         , postgresqlDataDir = Nothing
                         , postgresqlMaxConnections = Nothing
+                        , postgresqlPolicies = []
                         }
              in decode (encode cfg) @?= Just cfg
         , testCase "round-trips full config" $
-            let Right name = mkModuleName "main"
+            let name = requireRight (mkModuleName "main")
                 cfg =
                     PostgreSQLConfig
                         { postgresqlConfigName = name
@@ -33,12 +35,14 @@ tests =
                         , postgresqlPort = Just 5432
                         , postgresqlDataDir = Just "/var/lib/postgresql"
                         , postgresqlMaxConnections = Just 200
+                        , postgresqlPolicies =
+                            [NetworkPolicy (requireRight (Network.allowPortsPolicy (Network.ports [5432])))]
                         }
              in decode (encode cfg) @?= Just cfg
         , testCase "rejects empty name in JSON" $
             (decode "{\"name\":\"\",\"enable\":true}" :: Maybe PostgreSQLConfig) @?= Nothing
         , testCase "round-trips with different name" $
-            let Right name = mkModuleName "replica"
+            let name = requireRight (mkModuleName "replica")
                 cfg =
                     PostgreSQLConfig
                         { postgresqlConfigName = name
@@ -46,11 +50,16 @@ tests =
                         , postgresqlPort = Just 5433
                         , postgresqlDataDir = Nothing
                         , postgresqlMaxConnections = Nothing
+                        , postgresqlPolicies = []
                         }
              in decode (encode cfg) @?= Just cfg
         , testCase "omits max_connections when absent" $
-            let Right name = mkModuleName "main"
-                cfg = PostgreSQLConfig name True Nothing Nothing Nothing
+            let name = requireRight (mkModuleName "main")
+                cfg = PostgreSQLConfig name True Nothing Nothing Nothing []
              in assertBool "unexpected max_connections key" $
                     not ("max_connections" `elem` (words (show (encode cfg))))
         ]
+
+requireRight :: (Show e) => Either e a -> a
+requireRight (Right v) = v
+requireRight (Left e) = error $ "requireRight: " <> show e

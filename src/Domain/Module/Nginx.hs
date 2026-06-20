@@ -10,6 +10,7 @@ import qualified Data.Text as T
 import Domain.Error (renderDomainError)
 import Domain.Module (ModuleName, mkModuleName, moduleNameText)
 import Domain.Module.Nginx.VirtualHost (NginxVirtualHost)
+import Policy (Policy)
 
 data NginxConfig = NginxConfig
     { nginxConfigName :: ModuleName
@@ -18,6 +19,7 @@ data NginxConfig = NginxConfig
     , nginxHttpsPort :: Maybe Int
     , nginxDomain :: Maybe Text
     , nginxVirtualHosts :: [NginxVirtualHost]
+    , nginxPolicies :: [Policy]
     }
     deriving (Eq, Show)
 
@@ -29,6 +31,7 @@ instance ToJSON NginxConfig where
                 <> maybe [] (\p -> ["https_port" .= p]) (nginxHttpsPort nc)
                 <> maybe [] (\d -> ["domain" .= d]) (nginxDomain nc)
                 <> (if null (nginxVirtualHosts nc) then [] else ["virtual_hosts" .= nginxVirtualHosts nc])
+                <> (if null (nginxPolicies nc) then [] else ["policies" .= nginxPolicies nc])
 
 instance FromJSON NginxConfig where
     parseJSON = withObject "NginxConfig" $ \o -> do
@@ -40,3 +43,4 @@ instance FromJSON NginxConfig where
             <*> o .:? "https_port"
             <*> o .:? "domain"
             <*> o .:? "virtual_hosts" .!= []
+            <*> o .:? "policies" .!= []

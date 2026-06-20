@@ -7,11 +7,10 @@ import qualified Domain.Network as Network
 import qualified Domain.Package as Package
 import qualified Domain.Power as Power
 import qualified Domain.Process as Process
-import qualified Domain.Service as Service
 import qualified Domain.System as System
 import ObserveStrategy (IntervalMs, ObserveStrategy (..), intervalMilliseconds, mkIntervalMs)
 import Test.QuickCheck
-import Types (ProfileName, ServiceSectionName, mkProfileName, mkServiceSectionName, profileNameText, serviceSectionNameText)
+import Types (ProfileName, mkProfileName, profileNameText)
 
 requireRight :: (Show e) => Either e a -> a
 requireRight (Right x) = x
@@ -99,39 +98,6 @@ instance Arbitrary System.Condition where
         [System.BatteryAbove p' obs | p' <- shrink p]
             <> [System.BatteryAbove p obs' | obs' <- shrink obs]
 
-instance Arbitrary Service.ServiceName where
-    arbitrary = requireRight . Service.mkServiceName . T.pack <$> listOf1 arbitrary
-    shrink name =
-        [ candidate
-        | str <- shrink (T.unpack (Service.serviceNameText name))
-        , Right candidate <- [Service.mkServiceName (T.pack str)]
-        ]
-
-instance Arbitrary Service.Priority where
-    arbitrary = requireRight . Service.mkPriority <$> choose (0, 100)
-    shrink p =
-        [ candidate
-        | v <- shrink (Service.priorityInt p)
-        , Right candidate <- [Service.mkPriority v]
-        ]
-
-instance Arbitrary Service.ServiceBaseState where
-    arbitrary = oneof [pure Service.Enabled, pure Service.Disabled]
-    shrink _ = []
-
-instance Arbitrary Service.Action where
-    arbitrary =
-        oneof
-            [ Service.EnableWithPriority <$> arbitrary <*> arbitrary
-            , Service.DisableWithPriority <$> arbitrary <*> arbitrary
-            ]
-    shrink (Service.EnableWithPriority n p) =
-        [Service.EnableWithPriority n' p | n' <- shrink n]
-            <> [Service.EnableWithPriority n p' | p' <- shrink p]
-    shrink (Service.DisableWithPriority n p) =
-        [Service.DisableWithPriority n' p | n' <- shrink n]
-            <> [Service.DisableWithPriority n p' | p' <- shrink p]
-
 instance Arbitrary Network.Port where
     arbitrary = Network.Port <$> arbitrary
     shrink (Network.Port p) = Network.Port <$> shrink p
@@ -166,12 +132,4 @@ instance Arbitrary ProfileName where
         [ candidate
         | str <- shrink (T.unpack (profileNameText name))
         , Right candidate <- [mkProfileName (T.pack str)]
-        ]
-
-instance Arbitrary ServiceSectionName where
-    arbitrary = requireRight . mkServiceSectionName . T.pack <$> listOf1 arbitrary
-    shrink name =
-        [ candidate
-        | str <- shrink (T.unpack (serviceSectionNameText name))
-        , Right candidate <- [mkServiceSectionName (T.pack str)]
         ]

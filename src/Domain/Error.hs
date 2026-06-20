@@ -17,6 +17,7 @@ data DomainError
     = EmptyName
     | EmptyList Text
     | InvalidInterval Int
+    | InvalidPort Int
     | InvalidThreshold Double
     | InvalidPercent Int
     | StrategyConflict
@@ -29,6 +30,8 @@ renderDomainError EmptyName = "name must not be empty"
 renderDomainError (EmptyList what) = what <> " list must not be empty"
 renderDomainError (InvalidInterval ms) =
     "interval must be positive, got " <> T.pack (show ms) <> " ms"
+renderDomainError (InvalidPort p) =
+    "port must be between 0 and 65535, got " <> T.pack (show p)
 renderDomainError (InvalidThreshold t) =
     "threshold must be between 0.0 and 1.0, got " <> T.pack (show t)
 renderDomainError (InvalidPercent p) =

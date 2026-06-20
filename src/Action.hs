@@ -12,14 +12,12 @@ import Data.Text (Text)
 import qualified Data.Text as T
 import qualified Domain.Module as Module
 import qualified Domain.Power as Power
-import qualified Domain.Service as Service
 
 {- | A desired system state change to be applied by the Executor.
 Adding a new action domain requires extending this sum and bumping 'Types.IRVersion'.
 -}
 data Action
-    = ServiceAction Service.Action
-    | PowerAction Power.Action
+    = PowerAction Power.Action
     | ModuleAction Module.LifecycleAction
     deriving (Eq, Show)
 
@@ -29,9 +27,6 @@ Implement one instance per domain when adding a new 'Action' constructor.
 class LiftAction a where
     liftAction :: a -> Action
 
-instance LiftAction Service.Action where
-    liftAction = ServiceAction
-
 instance LiftAction Power.Action where
     liftAction = PowerAction
 
@@ -39,7 +34,6 @@ instance LiftAction Module.LifecycleAction where
     liftAction = ModuleAction
 
 instance ToJSON Action where
-    toJSON (ServiceAction a) = toJSON a
     toJSON (PowerAction a) = toJSON a
     toJSON (ModuleAction a) = toJSON a
 
@@ -50,8 +44,6 @@ instance FromJSON Action where
             ( \o -> do
                 t <- o .: "type" :: Parser Text
                 case t of
-                    "service_disable" -> ServiceAction <$> parseJSON v
-                    "service_enable" -> ServiceAction <$> parseJSON v
                     "power_profile" -> PowerAction <$> parseJSON v
                     "module_enable" -> ModuleAction <$> parseJSON v
                     "module_disable" -> ModuleAction <$> parseJSON v

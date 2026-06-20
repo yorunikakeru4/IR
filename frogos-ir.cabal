@@ -37,7 +37,6 @@ library
     Domain.Package
     Domain.Power
     Domain.Process
-    Domain.Service
     Domain.System
     ObserveStrategy
     Policy
@@ -66,7 +65,6 @@ test-suite frogos-ir-test
     Domain.PackageSpec
     Domain.PowerSpec
     Domain.ProcessSpec
-    Domain.ServiceSpec
     Domain.SystemSpec
     TypesSpec
 

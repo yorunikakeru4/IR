@@ -2,6 +2,17 @@
 
 ## Unreleased
 
+- `IR.Types`: removed `ServiceSectionName`, `ServiceSection`, `mkServiceSectionName`,
+  `serviceSectionNameText`, and `irServices`. `IRDocument` JSON no longer contains
+  a `services` key. `currentIRVersion` bumped from 4 to 5.
+- `IR.Action`: removed `ServiceAction` and service action decoding. Module lifecycle
+  actions are now the only lifecycle action domain.
+- `IR.Domain.Service`: removed the service domain module.
+- `IR.Domain.Module.PostgreSQL`, `IR.Domain.Module.Nginx`, and `IR.Domain.Module.Forgejo`:
+  configs gain module-level `policies :: [Policy]` fields, serialized as optional
+  `policies` keys and defaulting to `[]` when absent.
+- `IR.Domain.Error`: `InvalidPort Int` for invalid TCP/UDP port values.
+
 - Source modules were flattened by dropping the top-level `IR.` namespace. For example, import `Types` instead of `IR.Types`, and `Domain.Module.Nginx` instead of `IR.Domain.Module.Nginx`.
 
 - `IR.Domain.Module.PostgreSQL`: `PostgreSQLConfig` gains `postgresqlMaxConnections :: Maybe Int` (JSON key `max_connections`, omitted when absent).

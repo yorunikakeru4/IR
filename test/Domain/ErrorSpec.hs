@@ -18,6 +18,8 @@ tests =
                 renderDomainError (EmptyList "actions") @?= "actions list must not be empty"
             , testCase "InvalidInterval" $
                 renderDomainError (InvalidInterval 0) @?= "interval must be positive, got 0 ms"
+            , testCase "InvalidPort" $
+                renderDomainError (InvalidPort 70000) @?= "port must be between 0 and 65535, got 70000"
             , testCase "InvalidThreshold" $
                 renderDomainError (InvalidThreshold 1.5) @?= "threshold must be between 0.0 and 1.0, got 1.5"
             , testCase "InvalidPercent" $

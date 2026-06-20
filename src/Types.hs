@@ -9,11 +9,7 @@ module Types (
     ProfileName,
     mkProfileName,
     profileNameText,
-    ServiceSectionName,
-    mkServiceSectionName,
-    serviceSectionNameText,
     ProfileSection (..),
-    ServiceSection (..),
     ModuleMap (..),
     emptyModuleMap,
     mmIsEmpty,
@@ -34,7 +30,6 @@ import Domain.Module.Forgejo (ForgejoConfig)
 import Domain.Module.Nginx (NginxConfig)
 import Domain.Module.PostgreSQL (PostgreSQLConfig)
 import Domain.Package (PackageName, mkPackageName, packageNameText)
-import qualified Domain.Service as Service
 import Policy (Policy)
 
 {- | Monotonically incrementing IR schema version.
@@ -47,14 +42,10 @@ newtype IRVersion = IRVersion Int
 changes, including condition/action sums and module config shapes.
 -}
 currentIRVersion :: IRVersion
-currentIRVersion = IRVersion 4
+currentIRVersion = IRVersion 5
 
 -- | User-defined name for a profile section.
 newtype ProfileName = ProfileName Text
-    deriving (Eq, Show)
-
--- | User-defined name for a service section.
-newtype ServiceSectionName = ServiceSectionName Text
     deriving (Eq, Show)
 
 mkProfileName :: Text -> Either DomainError ProfileName
@@ -63,12 +54,6 @@ mkProfileName = mkName ProfileName
 profileNameText :: ProfileName -> Text
 profileNameText (ProfileName name) = name
 
-mkServiceSectionName :: Text -> Either DomainError ServiceSectionName
-mkServiceSectionName = mkName ServiceSectionName
-
-serviceSectionNameText :: ServiceSectionName -> Text
-serviceSectionNameText (ServiceSectionName name) = name
-
 -- | A named group of conditions, policies, and actions applied when the profile is active.
 data ProfileSection = ProfileSection
     { profileName :: ProfileName
@@ -76,16 +61,6 @@ data ProfileSection = ProfileSection
     , profilePolicies :: [Policy]
     , profileActions :: [Action]
     , profilePackages :: [PackageName]
-    }
-    deriving (Eq, Show)
-
--- | A named group of base state, policies, and actions for a service.
-data ServiceSection = ServiceSection
-    { serviceSectionName :: ServiceSectionName
-    , serviceSectionBaseState :: Maybe Service.ServiceBaseState
-    , serviceSectionPolicies :: [Policy]
-    , serviceSectionActions :: [Action]
-    , serviceSectionPackages :: [PackageName]
     }
     deriving (Eq, Show)
 
@@ -125,7 +100,6 @@ data IRDocument = IRDocument
     , irPackages :: [PackageName]
     , irModules :: ModuleMap
     , irProfiles :: [ProfileSection]
-    , irServices :: [ServiceSection]
     }
     deriving (Eq, Show)
 
@@ -142,14 +116,6 @@ instance FromJSON ProfileName where
     parseJSON value = do
         name <- parseJSON value
         either (fail . T.unpack . renderDomainError) pure (mkProfileName name)
-
-instance ToJSON ServiceSectionName where
-    toJSON (ServiceSectionName t) = toJSON t
-
-instance FromJSON ServiceSectionName where
-    parseJSON value = do
-        name <- parseJSON value
-        either (fail . T.unpack . renderDomainError) pure (mkServiceSectionName name)
 
 -- | Serialise a list field, omitting the key entirely when the list is empty.
 omitEmpty :: (ToJSON a, KeyValue e kv) => Key -> [a] -> [kv]
@@ -172,29 +138,10 @@ instance FromJSON ProfileSection where
             <*> o .: "actions"
             <*> o .:? "packages" .!= []
 
-instance ToJSON ServiceSection where
-    toJSON ss =
-        object $
-            [ "name" .= serviceSectionName ss
-            , "policies" .= serviceSectionPolicies ss
-            , "actions" .= serviceSectionActions ss
-            ]
-                <> maybe [] (\b -> ["baseState" .= b]) (serviceSectionBaseState ss)
-                <> omitEmpty "packages" (serviceSectionPackages ss)
-
-instance FromJSON ServiceSection where
-    parseJSON = withObject "ServiceSection" $ \o ->
-        ServiceSection
-            <$> o .: "name"
-            <*> o .:? "baseState"
-            <*> o .: "policies"
-            <*> o .: "actions"
-            <*> o .:? "packages" .!= []
-
 instance ToJSON IRDocument where
     toJSON doc =
         object $
-            ["version" .= irVersion doc, "profiles" .= irProfiles doc, "services" .= irServices doc]
+            ["version" .= irVersion doc, "profiles" .= irProfiles doc]
                 <> omitEmpty "packages" (irPackages doc)
                 <> (if mmIsEmpty (irModules doc) then [] else ["modules" .= irModules doc])
 
@@ -205,4 +152,3 @@ instance FromJSON IRDocument where
             <*> o .:? "packages" .!= []
             <*> o .:? "modules" .!= emptyModuleMap
             <*> o .: "profiles"
-            <*> o .: "services"

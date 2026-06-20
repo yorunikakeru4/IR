@@ -14,6 +14,9 @@ module IR.Types (
     serviceSectionNameText,
     ProfileSection (..),
     ServiceSection (..),
+    ModuleMap (..),
+    emptyModuleMap,
+    mmIsEmpty,
     IRDocument (..),
     PackageName,
     mkPackageName,
@@ -26,6 +29,10 @@ import qualified Data.Text as T
 import IR.Action (Action)
 import IR.Condition (Condition)
 import IR.Domain.Error (DomainError, mkName, renderDomainError)
+import IR.Domain.Module.Docker (DockerConfig)
+import IR.Domain.Module.Forgejo (ForgejoConfig)
+import IR.Domain.Module.Nginx (NginxConfig)
+import IR.Domain.Module.PostgreSQL (PostgreSQLConfig)
 import IR.Domain.Package (PackageName, mkPackageName, packageNameText)
 import qualified IR.Domain.Service as Service
 import IR.Policy (Policy)
@@ -40,7 +47,7 @@ newtype IRVersion = IRVersion Int
 or 'IR.Action.Action' sums are extended with new constructors.
 -}
 currentIRVersion :: IRVersion
-currentIRVersion = IRVersion 2
+currentIRVersion = IRVersion 3
 
 -- | User-defined name for a profile section.
 newtype ProfileName = ProfileName Text
@@ -82,10 +89,41 @@ data ServiceSection = ServiceSection
     }
     deriving (Eq, Show)
 
+data ModuleMap = ModuleMap
+    { mmDocker :: [DockerConfig]
+    , mmPostgreSQL :: [PostgreSQLConfig]
+    , mmNginx :: [NginxConfig]
+    , mmForgejo :: [ForgejoConfig]
+    }
+    deriving (Eq, Show)
+
+emptyModuleMap :: ModuleMap
+emptyModuleMap = ModuleMap{mmDocker = [], mmPostgreSQL = [], mmNginx = [], mmForgejo = []}
+
+mmIsEmpty :: ModuleMap -> Bool
+mmIsEmpty mm = null (mmDocker mm) && null (mmPostgreSQL mm) && null (mmNginx mm) && null (mmForgejo mm)
+
+instance ToJSON ModuleMap where
+    toJSON mm =
+        object $
+            omitEmpty "docker" (mmDocker mm)
+                <> omitEmpty "postgresql" (mmPostgreSQL mm)
+                <> omitEmpty "nginx" (mmNginx mm)
+                <> omitEmpty "forgejo" (mmForgejo mm)
+
+instance FromJSON ModuleMap where
+    parseJSON = withObject "ModuleMap" $ \o ->
+        ModuleMap
+            <$> o .:? "docker" .!= []
+            <*> o .:? "postgresql" .!= []
+            <*> o .:? "nginx" .!= []
+            <*> o .:? "forgejo" .!= []
+
 -- | The complete IR document serialized as @intent.json@ for each generation.
 data IRDocument = IRDocument
     { irVersion :: IRVersion
     , irPackages :: [PackageName]
+    , irModules :: ModuleMap
     , irProfiles :: [ProfileSection]
     , irServices :: [ServiceSection]
     }
@@ -158,11 +196,13 @@ instance ToJSON IRDocument where
         object $
             ["version" .= irVersion doc, "profiles" .= irProfiles doc, "services" .= irServices doc]
                 <> omitEmpty "packages" (irPackages doc)
+                <> (if mmIsEmpty (irModules doc) then [] else ["modules" .= irModules doc])
 
 instance FromJSON IRDocument where
     parseJSON = withObject "IRDocument" $ \o ->
         IRDocument
             <$> o .: "version"
             <*> o .:? "packages" .!= []
+            <*> o .:? "modules" .!= emptyModuleMap
             <*> o .: "profiles"
             <*> o .: "services"

@@ -38,6 +38,17 @@ tests =
                     not ("\"packages\"" `BS.isInfixOf` BSL.toStrict (encode (section Nothing)))
             ]
         , testGroup
+            "modules JSON"
+            [ testCase "omits modules key when ModuleMap is empty" $
+                assertBool "unexpected modules key" $
+                    not ("\"modules\"" `BS.isInfixOf` BSL.toStrict (encode emptyDoc))
+            , testCase "decodes JSON without modules to emptyModuleMap" $
+                fmap irModules (decode "{\"version\":3,\"profiles\":[],\"services\":[]}" :: Maybe IRDocument)
+                    @?= Just emptyModuleMap
+            , testCase "round-trips emptyModuleMap" $
+                decode (encode emptyDoc) @?= Just emptyDoc
+            ]
+        , testGroup
             "properties"
             [ testProperty "profileNameText . mkProfileName roundtrips non-empty text" $
                 \name ->
@@ -49,6 +60,16 @@ tests =
                         === Right (serviceSectionNameText name)
             ]
         ]
+
+emptyDoc :: IRDocument
+emptyDoc =
+    IRDocument
+        { irVersion = currentIRVersion
+        , irPackages = []
+        , irModules = emptyModuleMap
+        , irProfiles = []
+        , irServices = []
+        }
 
 section :: Maybe Service.ServiceBaseState -> ServiceSection
 section base =

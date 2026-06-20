@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+- `IR.Domain.Module`: `ModuleDomain` enum (`DockerDomain | PostgreSQLDomain | NginxDomain | ForgejoDomain`), `ModuleName` newtype with `mkModuleName`/`moduleNameText`, `ModuleRef` with `moduleRefDomain`/`moduleRefName`, `LifecycleAction` (`EnableModule | DisableModule | RestartModule ModuleRef`). JSON type strings: `module_enable`, `module_disable`, `module_restart`.
+- `IR.Domain.Module.Docker`: `DockerConfig` (singleton, name always `"default"` in JSON) with `dockerEnable`, `dockerRootless`, `dockerStorageDriver :: Maybe StorageDriver`. `StorageDriver` enum (`Overlay2 | VFS | BTRFS`).
+- `IR.Domain.Module.PostgreSQL`: `PostgreSQLConfig` with `postgresqlConfigName :: ModuleName`, `postgresqlEnable`, `postgresqlPort :: Maybe Int`, `postgresqlDataDir :: Maybe Text`.
+- `IR.Domain.Module.Nginx`: `NginxConfig` with `nginxConfigName :: ModuleName`, `nginxEnable`.
+- `IR.Domain.Module.Forgejo`: `ForgejoConfig` with `forgejoConfigName :: ModuleName`, `forgejoEnable`.
+- `IR.Action`: `Action` gains `ModuleAction Module.LifecycleAction` constructor with `LiftAction` instance; `ToJSON`/`FromJSON` route `module_enable`, `module_disable`, `module_restart`.
+- `IR.Types`: `ModuleMap` record (`mmDocker`, `mmPostgreSQL`, `mmNginx`, `mmForgejo`); `emptyModuleMap`; `mmIsEmpty`. `IRDocument` gains `irModules :: ModuleMap` — omitted from JSON when all domain lists are empty, defaults to `emptyModuleMap` when absent. `currentIRVersion` bumped from 2 to 3.
+
 - `IR.Domain.Package`: new module. `PackageName` newtype with `mkPackageName :: Text -> Either DomainError PackageName` and `packageNameText :: PackageName -> Text`. `ToJSON`/`FromJSON` instances — serialises as a plain JSON string.
 - `IR.Types`: `IRDocument` gains `irPackages :: [PackageName]` (global packages, always installed). `ProfileSection` gains `profilePackages :: [PackageName]` (conditional packages, available while the profile is active). `ServiceSection` gains `serviceSectionPackages :: [PackageName]` (packages associated with the service). All three fields are omitted from JSON when empty and default to `[]` when absent — backward compatible with existing documents.
 

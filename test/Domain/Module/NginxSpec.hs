@@ -23,9 +23,6 @@ tests =
                     NginxConfig
                         { nginxConfigName = name
                         , nginxEnable = True
-                        , nginxHttpPort = Nothing
-                        , nginxHttpsPort = Nothing
-                        , nginxDomain = Nothing
                         , nginxVirtualHosts =
                             [ NginxVirtualHost
                                 { vhostDomain = "example.com"
@@ -44,9 +41,6 @@ tests =
                     NginxConfig
                         { nginxConfigName = name
                         , nginxEnable = True
-                        , nginxHttpPort = Nothing
-                        , nginxHttpsPort = Nothing
-                        , nginxDomain = Nothing
                         , nginxVirtualHosts = []
                         , nginxPolicies = []
                         }

@@ -5,7 +5,6 @@ module Domain.Module.Nginx (
 ) where
 
 import Data.Aeson
-import Data.Text (Text)
 import qualified Data.Text as T
 import Domain.Error (renderDomainError)
 import Domain.Module (ModuleName, mkModuleName, moduleNameText)
@@ -15,9 +14,6 @@ import Policy (Policy)
 data NginxConfig = NginxConfig
     { nginxConfigName :: ModuleName
     , nginxEnable :: Bool
-    , nginxHttpPort :: Maybe Int
-    , nginxHttpsPort :: Maybe Int
-    , nginxDomain :: Maybe Text
     , nginxVirtualHosts :: [NginxVirtualHost]
     , nginxPolicies :: [Policy]
     }
@@ -27,9 +23,6 @@ instance ToJSON NginxConfig where
     toJSON nc =
         object $
             ["name" .= moduleNameText (nginxConfigName nc), "enable" .= nginxEnable nc]
-                <> maybe [] (\p -> ["http_port" .= p]) (nginxHttpPort nc)
-                <> maybe [] (\p -> ["https_port" .= p]) (nginxHttpsPort nc)
-                <> maybe [] (\d -> ["domain" .= d]) (nginxDomain nc)
                 <> (if null (nginxVirtualHosts nc) then [] else ["virtual_hosts" .= nginxVirtualHosts nc])
                 <> (if null (nginxPolicies nc) then [] else ["policies" .= nginxPolicies nc])
 
@@ -39,8 +32,5 @@ instance FromJSON NginxConfig where
         name <- either (fail . T.unpack . renderDomainError) pure (mkModuleName rawName)
         NginxConfig name
             <$> o .: "enable"
-            <*> o .:? "http_port"
-            <*> o .:? "https_port"
-            <*> o .:? "domain"
             <*> o .:? "virtual_hosts" .!= []
             <*> o .:? "policies" .!= []

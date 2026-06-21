@@ -28,7 +28,6 @@ library
     Condition
     Domain.Error
     Domain.Module
-    Domain.Module.Docker
     Domain.Module.Forgejo
     Domain.Module.Nginx
     Domain.Module.Nginx.VirtualHost
@@ -58,7 +57,6 @@ test-suite frogos-ir-test
     Arbitraries
     Domain.ErrorSpec
     Domain.ModuleSpec
-    Domain.Module.DockerSpec
     Domain.Module.NginxSpec
     Domain.Module.PostgreSQLSpec
     Domain.NetworkSpec

@@ -23,9 +23,7 @@ tests =
             ]
         , testGroup
             "ModuleDomain JSON"
-            [ testCase "encodes DockerDomain as \"docker\"" $
-                encode DockerDomain @?= "\"docker\""
-            , testCase "encodes PostgreSQLDomain as \"postgresql\"" $
+            [ testCase "encodes PostgreSQLDomain as \"postgresql\"" $
                 encode PostgreSQLDomain @?= "\"postgresql\""
             , testCase "encodes NginxDomain as \"nginx\"" $
                 encode NginxDomain @?= "\"nginx\""
@@ -38,25 +36,22 @@ tests =
             ]
         , testGroup
             "ModuleRef JSON round-trip"
-            [ testCase "round-trips docker/default" $
-                let ref = ModuleRef DockerDomain (unsafeName "default")
-                 in decode (encode ref) @?= Just ref
-            , testCase "round-trips postgresql/main" $
+            [ testCase "round-trips postgresql/main" $
                 let ref = ModuleRef PostgreSQLDomain (unsafeName "main")
                  in decode (encode ref) @?= Just ref
             , testCase "rejects empty name in ModuleRef JSON" $
-                (decode "{\"domain\":\"docker\",\"name\":\"\"}" :: Maybe ModuleRef) @?= Nothing
+                (decode "{\"domain\":\"nginx\",\"name\":\"\"}" :: Maybe ModuleRef) @?= Nothing
             ]
         , testGroup
             "LifecycleAction JSON"
             [ testCase "encodes EnableModule with correct type string" $
                 assertBool "missing module_enable" $
-                    "module_enable" `isInfixOf` BSLC.unpack (encode (EnableModule (ModuleRef DockerDomain (unsafeName "default")) 100))
+                    "module_enable" `isInfixOf` BSLC.unpack (encode (EnableModule (ModuleRef NginxDomain (unsafeName "nginx")) 100))
             , testCase "EnableModule encodes priority field" $
                 assertBool "missing priority" $
-                    "\"priority\"" `isInfixOf` BSLC.unpack (encode (EnableModule (ModuleRef DockerDomain (unsafeName "default")) 80))
+                    "\"priority\"" `isInfixOf` BSLC.unpack (encode (EnableModule (ModuleRef NginxDomain (unsafeName "nginx")) 80))
             , testCase "round-trips EnableModule with priority" $
-                let a = EnableModule (ModuleRef DockerDomain (unsafeName "default")) 80
+                let a = EnableModule (ModuleRef NginxDomain (unsafeName "nginx")) 80
                  in decode (encode a) @?= Just a
             , testCase "round-trips DisableModule with priority" $
                 let a = DisableModule (ModuleRef PostgreSQLDomain (unsafeName "main")) 100
@@ -66,11 +61,11 @@ tests =
                  in decode (encode a) @?= Just a
             , testCase "decodes EnableModule without priority field defaults to 100" $
                 decode
-                    "{\"type\":\"module_enable\",\"module\":{\"domain\":\"docker\",\"name\":\"default\"}}"
-                    @?= Just (EnableModule (ModuleRef DockerDomain (unsafeName "default")) 100)
+                    "{\"type\":\"module_enable\",\"module\":{\"domain\":\"nginx\",\"name\":\"nginx\"}}"
+                    @?= Just (EnableModule (ModuleRef NginxDomain (unsafeName "nginx")) 100)
             , testCase "rejects unknown type" $
                 ( decode
-                    "{\"type\":\"module_pause\",\"module\":{\"domain\":\"docker\",\"name\":\"default\"}}" ::
+                    "{\"type\":\"module_pause\",\"module\":{\"domain\":\"nginx\",\"name\":\"nginx\"}}" ::
                     Maybe LifecycleAction
                 )
                     @?= Nothing

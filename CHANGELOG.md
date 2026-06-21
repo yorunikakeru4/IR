@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- `IR.Domain.Module.Docker`: removed. `DockerConfig` and `StorageDriver` are no longer part of the IR.
+- `IR.Domain.Module`: removed `DockerDomain` constructor from `ModuleDomain`.
+- `IR.Types`: removed `mmDocker :: [DockerConfig]` field from `ModuleMap`. `emptyModuleMap`, `mmIsEmpty`, `ToJSON`, and `FromJSON` updated accordingly. `ModuleMap` now has three fields: `mmPostgreSQL`, `mmNginx`, `mmForgejo`.
+
 - `IR.Domain.Module`: `EnableModule` and `DisableModule` constructors now carry an `Int` priority field (0–100). JSON gains a `"priority"` key; decoding defaults to `100` when absent for backward compatibility. `currentIRVersion` bumped from 5 to 6.
 
 - `IR.Types`: removed `ServiceSectionName`, `ServiceSection`, `mkServiceSectionName`,

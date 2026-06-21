@@ -17,14 +17,12 @@ import qualified Data.Text as T
 import Domain.Error (DomainError, mkName, renderDomainError)
 
 data ModuleDomain
-    = DockerDomain
-    | PostgreSQLDomain
+    = PostgreSQLDomain
     | NginxDomain
     | ForgejoDomain
     deriving (Eq, Ord, Show)
 
 moduleDomainText :: ModuleDomain -> Text
-moduleDomainText DockerDomain = "docker"
 moduleDomainText PostgreSQLDomain = "postgresql"
 moduleDomainText NginxDomain = "nginx"
 moduleDomainText ForgejoDomain = "forgejo"
@@ -34,7 +32,6 @@ instance ToJSON ModuleDomain where
 
 instance FromJSON ModuleDomain where
     parseJSON = withText "ModuleDomain" $ \t -> case t of
-        "docker" -> pure DockerDomain
         "postgresql" -> pure PostgreSQLDomain
         "nginx" -> pure NginxDomain
         "forgejo" -> pure ForgejoDomain

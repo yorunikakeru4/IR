@@ -25,7 +25,6 @@ import Data.Aeson
 import Data.Text (Text)
 import qualified Data.Text as T
 import Domain.Error (DomainError, mkName, renderDomainError)
-import Domain.Module.Docker (DockerConfig)
 import Domain.Module.Forgejo (ForgejoConfig)
 import Domain.Module.Nginx (NginxConfig)
 import Domain.Module.PostgreSQL (PostgreSQLConfig)
@@ -65,32 +64,29 @@ data ProfileSection = ProfileSection
     deriving (Eq, Show)
 
 data ModuleMap = ModuleMap
-    { mmDocker :: [DockerConfig]
-    , mmPostgreSQL :: [PostgreSQLConfig]
+    { mmPostgreSQL :: [PostgreSQLConfig]
     , mmNginx :: [NginxConfig]
     , mmForgejo :: [ForgejoConfig]
     }
     deriving (Eq, Show)
 
 emptyModuleMap :: ModuleMap
-emptyModuleMap = ModuleMap{mmDocker = [], mmPostgreSQL = [], mmNginx = [], mmForgejo = []}
+emptyModuleMap = ModuleMap{mmPostgreSQL = [], mmNginx = [], mmForgejo = []}
 
 mmIsEmpty :: ModuleMap -> Bool
-mmIsEmpty mm = null (mmDocker mm) && null (mmPostgreSQL mm) && null (mmNginx mm) && null (mmForgejo mm)
+mmIsEmpty mm = null (mmPostgreSQL mm) && null (mmNginx mm) && null (mmForgejo mm)
 
 instance ToJSON ModuleMap where
     toJSON mm =
         object $
-            omitEmpty "docker" (mmDocker mm)
-                <> omitEmpty "postgresql" (mmPostgreSQL mm)
+            omitEmpty "postgresql" (mmPostgreSQL mm)
                 <> omitEmpty "nginx" (mmNginx mm)
                 <> omitEmpty "forgejo" (mmForgejo mm)
 
 instance FromJSON ModuleMap where
     parseJSON = withObject "ModuleMap" $ \o ->
         ModuleMap
-            <$> o .:? "docker" .!= []
-            <*> o .:? "postgresql" .!= []
+            <$> o .:? "postgresql" .!= []
             <*> o .:? "nginx" .!= []
             <*> o .:? "forgejo" .!= []
 

@@ -1,7 +1,6 @@
 module Main (main) where
 
 import qualified Domain.ErrorSpec
-import qualified Domain.Module.DockerSpec
 import qualified Domain.Module.NginxSpec
 import qualified Domain.Module.PostgreSQLSpec
 import qualified Domain.ModuleSpec
@@ -19,7 +18,6 @@ main =
         testGroup
             "IR"
             [ Domain.ErrorSpec.tests
-            , Domain.Module.DockerSpec.tests
             , Domain.Module.NginxSpec.tests
             , Domain.Module.PostgreSQLSpec.tests
             , Domain.ModuleSpec.tests

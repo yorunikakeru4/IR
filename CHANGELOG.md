@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- `IR.Domain.Module`: added `moduleDomainName :: ModuleDomain -> ModuleName`.
 - `IR.Domain.Module.Nginx.VirtualHost`: `NginxVirtualHost` gains
   `vhostPolicies :: [Policy]`, serialized as an optional `policies` key and
   defaulting to `[]` when absent.

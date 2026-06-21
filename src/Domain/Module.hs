@@ -3,6 +3,7 @@
 module Domain.Module (
     ModuleDomain (..),
     moduleDomainText,
+    moduleDomainName,
     ModuleName,
     mkModuleName,
     moduleNameText,
@@ -26,6 +27,9 @@ moduleDomainText :: ModuleDomain -> Text
 moduleDomainText PostgreSQLDomain = "postgresql"
 moduleDomainText NginxDomain = "nginx"
 moduleDomainText ForgejoDomain = "forgejo"
+
+moduleDomainName :: ModuleDomain -> ModuleName
+moduleDomainName = ModuleName . moduleDomainText
 
 instance ToJSON ModuleDomain where
     toJSON = toJSON . moduleDomainText

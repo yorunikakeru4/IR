@@ -12,19 +12,19 @@ import Domain.Module.Nginx.VirtualHost (NginxVirtualHost)
 import Policy (Policy)
 
 data NginxConfig = NginxConfig
-    { nginxConfigName :: ModuleName
-    , nginxEnable :: Bool
-    , nginxVirtualHosts :: [NginxVirtualHost]
-    , nginxPolicies :: [Policy]
+    { configName :: ModuleName
+    , enable :: Bool
+    , virtualHosts :: [NginxVirtualHost]
+    , policies :: [Policy]
     }
     deriving (Eq, Show)
 
 instance ToJSON NginxConfig where
     toJSON nc =
         object $
-            ["name" .= moduleNameText (nginxConfigName nc), "enable" .= nginxEnable nc]
-                <> (if null (nginxVirtualHosts nc) then [] else ["virtual_hosts" .= nginxVirtualHosts nc])
-                <> (if null (nginxPolicies nc) then [] else ["policies" .= nginxPolicies nc])
+            ["name" .= moduleNameText (configName nc), "enable" .= enable nc]
+                <> (if null (virtualHosts nc) then [] else ["virtual_hosts" .= virtualHosts nc])
+                <> (if null (policies nc) then [] else ["policies" .= policies nc])
 
 instance FromJSON NginxConfig where
     parseJSON = withObject "NginxConfig" $ \o -> do

@@ -11,24 +11,25 @@ import Domain.Error (renderDomainError)
 import Domain.Module (ModuleName, mkModuleName, moduleNameText)
 import Policy (Policy)
 
+-- Raw forgejo configuration, for
 data ForgejoConfig = ForgejoConfig
-    { forgejoConfigName :: ModuleName
-    , forgejoEnable :: Bool
-    , forgejoHttpPort :: Maybe Int
-    , forgejoSshPort :: Maybe Int
-    , forgejoDomain :: Maybe Text
-    , forgejoPolicies :: [Policy]
+    { configName :: ModuleName
+    , enable :: Bool
+    , httpPort :: Maybe Int
+    , sshPort :: Maybe Int
+    , domain :: Maybe Text
+    , policies :: [Policy]
     }
     deriving (Eq, Show)
 
 instance ToJSON ForgejoConfig where
     toJSON fc =
         object $
-            ["name" .= moduleNameText (forgejoConfigName fc), "enable" .= forgejoEnable fc]
-                <> maybe [] (\p -> ["http_port" .= p]) (forgejoHttpPort fc)
-                <> maybe [] (\p -> ["ssh_port" .= p]) (forgejoSshPort fc)
-                <> maybe [] (\d -> ["domain" .= d]) (forgejoDomain fc)
-                <> (if null (forgejoPolicies fc) then [] else ["policies" .= forgejoPolicies fc])
+            ["name" .= moduleNameText (configName fc), "enable" .= enable fc]
+                <> maybe [] (\p -> ["http_port" .= p]) (httpPort fc)
+                <> maybe [] (\p -> ["ssh_port" .= p]) (sshPort fc)
+                <> maybe [] (\d -> ["domain" .= d]) (domain fc)
+                <> (if null (policies fc) then [] else ["policies" .= policies fc])
 
 instance FromJSON ForgejoConfig where
     parseJSON = withObject "ForgejoConfig" $ \o -> do

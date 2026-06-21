@@ -18,24 +18,24 @@ tests =
             let name = requireRight (mkModuleName "main")
                 cfg =
                     PostgreSQLConfig
-                        { postgresqlConfigName = name
-                        , postgresqlEnable = True
-                        , postgresqlPort = Nothing
-                        , postgresqlDataDir = Nothing
-                        , postgresqlMaxConnections = Nothing
-                        , postgresqlPolicies = []
+                        { configName = name
+                        , enable = True
+                        , port = Nothing
+                        , dataDir = Nothing
+                        , maxConnections = Nothing
+                        , policies = []
                         }
              in decode (encode cfg) @?= Just cfg
         , testCase "round-trips full config" $
             let name = requireRight (mkModuleName "main")
                 cfg =
                     PostgreSQLConfig
-                        { postgresqlConfigName = name
-                        , postgresqlEnable = True
-                        , postgresqlPort = Just 5432
-                        , postgresqlDataDir = Just "/var/lib/postgresql"
-                        , postgresqlMaxConnections = Just 200
-                        , postgresqlPolicies =
+                        { configName = name
+                        , enable = True
+                        , port = Just 5432
+                        , dataDir = Just "/var/lib/postgresql"
+                        , maxConnections = Just 200
+                        , policies =
                             [NetworkPolicy (requireRight (Network.allowPortsPolicy (Network.ports [5432])))]
                         }
              in decode (encode cfg) @?= Just cfg
@@ -45,12 +45,12 @@ tests =
             let name = requireRight (mkModuleName "replica")
                 cfg =
                     PostgreSQLConfig
-                        { postgresqlConfigName = name
-                        , postgresqlEnable = False
-                        , postgresqlPort = Just 5433
-                        , postgresqlDataDir = Nothing
-                        , postgresqlMaxConnections = Nothing
-                        , postgresqlPolicies = []
+                        { configName = name
+                        , enable = False
+                        , port = Just 5433
+                        , dataDir = Nothing
+                        , maxConnections = Nothing
+                        , policies = []
                         }
              in decode (encode cfg) @?= Just cfg
         , testCase "omits max_connections when absent" $

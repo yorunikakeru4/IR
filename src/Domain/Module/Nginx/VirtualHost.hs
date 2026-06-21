@@ -9,22 +9,22 @@ import Data.Text (Text)
 import Policy (Policy)
 
 data NginxVirtualHost = NginxVirtualHost
-    { vhostDomain :: Text
-    , vhostHttpPort :: Maybe Int
-    , vhostHttpsPort :: Maybe Int
-    , vhostProxyPass :: Maybe Text
-    , vhostPolicies :: [Policy]
+    { domain :: Text
+    , httpPort :: Maybe Int
+    , httpsPort :: Maybe Int
+    , proxyPass :: Maybe Text
+    , policies :: [Policy]
     }
     deriving (Eq, Show)
 
 instance ToJSON NginxVirtualHost where
     toJSON vh =
         object $
-            ["domain" .= vhostDomain vh]
-                <> maybe [] (\p -> ["http_port" .= p]) (vhostHttpPort vh)
-                <> maybe [] (\p -> ["https_port" .= p]) (vhostHttpsPort vh)
-                <> maybe [] (\u -> ["proxy_pass" .= u]) (vhostProxyPass vh)
-                <> (if null (vhostPolicies vh) then [] else ["policies" .= vhostPolicies vh])
+            ["domain" .= domain vh]
+                <> maybe [] (\p -> ["http_port" .= p]) (httpPort vh)
+                <> maybe [] (\p -> ["https_port" .= p]) (httpsPort vh)
+                <> maybe [] (\u -> ["proxy_pass" .= u]) (proxyPass vh)
+                <> (if null (policies vh) then [] else ["policies" .= policies vh])
 
 instance FromJSON NginxVirtualHost where
     parseJSON = withObject "NginxVirtualHost" $ \o ->

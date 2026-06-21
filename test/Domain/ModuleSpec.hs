@@ -5,6 +5,7 @@ module Domain.ModuleSpec (tests) where
 import Data.Aeson (decode, encode)
 import qualified Data.ByteString.Lazy.Char8 as BSLC
 import Data.List (isInfixOf)
+import qualified Data.Text as Data.Text.Internal
 import Domain.Error (DomainError (..))
 import Domain.Module
 import Test.Tasty
@@ -72,7 +73,8 @@ tests =
             ]
         ]
 
-unsafeName :: String -> ModuleName
-unsafeName t = case mkModuleName (read (show t)) of
-    Right n -> n
-    Left _ -> error "unsafeName: empty string"
+unsafeName :: Data.Text.Internal.Text -> ModuleName
+unsafeName t =
+    case mkModuleName t of
+        Right n -> n
+        Left _ -> error "unsafeName: empty string"

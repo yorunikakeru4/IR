@@ -6,8 +6,8 @@ import Data.Aeson (decode, encode)
 import qualified Data.ByteString.Lazy.Char8 as BSLC
 import Data.List (isInfixOf)
 import Domain.Module (mkModuleName)
-import Domain.Module.Nginx
-import Domain.Module.Nginx.VirtualHost
+import qualified Domain.Module.Nginx as NG
+import qualified Domain.Module.Nginx.VirtualHost as VH
 import qualified Domain.Network as Network
 import Policy (Policy (NetworkPolicy))
 import Test.Tasty
@@ -20,45 +20,45 @@ tests =
         [ testCase "round-trips config with virtual hosts" $
             let name = requireRight (mkModuleName "nginx")
                 cfg =
-                    NginxConfig
-                        { nginxConfigName = name
-                        , nginxEnable = True
-                        , nginxVirtualHosts =
-                            [ NginxVirtualHost
-                                { vhostDomain = "example.com"
-                                , vhostHttpPort = Just 80
-                                , vhostHttpsPort = Just 443
-                                , vhostProxyPass = Just "http://backend:3000"
-                                , vhostPolicies =
+                    NG.NginxConfig
+                        { NG.configName = name
+                        , NG.enable = True
+                        , NG.virtualHosts =
+                            [ VH.NginxVirtualHost
+                                { VH.domain = "example.com"
+                                , VH.httpPort = Just 80
+                                , VH.httpsPort = Just 443
+                                , VH.proxyPass = Just "http://backend:3000"
+                                , VH.policies =
                                     [ NetworkPolicy
                                         (requireRight (Network.fallbackPolicy (Network.PortResource (Network.Port 80)) [Network.PortResource (Network.Port 8080)]))
                                     ]
                                 }
                             ]
-                        , nginxPolicies =
+                        , NG.policies =
                             [NetworkPolicy (requireRight (Network.allowPortsPolicy (Network.ports [80, 443])))]
                         }
              in decode (encode cfg) @?= Just cfg
         , testCase "omits virtual_hosts when empty" $
             let name = requireRight (mkModuleName "nginx")
                 cfg =
-                    NginxConfig
-                        { nginxConfigName = name
-                        , nginxEnable = True
-                        , nginxVirtualHosts = []
-                        , nginxPolicies = []
+                    NG.NginxConfig
+                        { NG.configName = name
+                        , NG.enable = True
+                        , NG.virtualHosts = []
+                        , NG.policies = []
                         }
              in assertBool "unexpected virtual_hosts key" $
                     not ("virtual_hosts" `isInfixOf` BSLC.unpack (encode cfg))
         , testCase "defaults virtual host policies to empty when absent" $
             let json = "{\"domain\":\"example.com\"}"
                 expected =
-                    NginxVirtualHost
-                        { vhostDomain = "example.com"
-                        , vhostHttpPort = Nothing
-                        , vhostHttpsPort = Nothing
-                        , vhostProxyPass = Nothing
-                        , vhostPolicies = []
+                    VH.NginxVirtualHost
+                        { VH.domain = "example.com"
+                        , VH.httpPort = Nothing
+                        , VH.httpsPort = Nothing
+                        , VH.proxyPass = Nothing
+                        , VH.policies = []
                         }
              in decode json @?= Just expected
         ]

@@ -12,23 +12,23 @@ import Domain.Module (ModuleName, mkModuleName, moduleNameText)
 import Policy (Policy)
 
 data PostgreSQLConfig = PostgreSQLConfig
-    { postgresqlConfigName :: ModuleName
-    , postgresqlEnable :: Bool
-    , postgresqlPort :: Maybe Int
-    , postgresqlDataDir :: Maybe Text
-    , postgresqlMaxConnections :: Maybe Int
-    , postgresqlPolicies :: [Policy]
+    { configName :: ModuleName
+    , enable :: Bool
+    , port :: Maybe Int
+    , dataDir :: Maybe Text
+    , maxConnections :: Maybe Int
+    , policies :: [Policy]
     }
     deriving (Eq, Show)
 
 instance ToJSON PostgreSQLConfig where
     toJSON pc =
         object $
-            ["name" .= moduleNameText (postgresqlConfigName pc), "enable" .= postgresqlEnable pc]
-                <> maybe [] (\p -> ["port" .= p]) (postgresqlPort pc)
-                <> maybe [] (\d -> ["data_dir" .= d]) (postgresqlDataDir pc)
-                <> maybe [] (\m -> ["max_connections" .= m]) (postgresqlMaxConnections pc)
-                <> (if null (postgresqlPolicies pc) then [] else ["policies" .= postgresqlPolicies pc])
+            ["name" .= moduleNameText (configName pc), "enable" .= enable pc]
+                <> maybe [] (\p -> ["port" .= p]) (port pc)
+                <> maybe [] (\d -> ["data_dir" .= d]) (dataDir pc)
+                <> maybe [] (\m -> ["max_connections" .= m]) (maxConnections pc)
+                <> (if null (policies pc) then [] else ["policies" .= policies pc])
 
 instance FromJSON PostgreSQLConfig where
     parseJSON = withObject "PostgreSQLConfig" $ \o -> do

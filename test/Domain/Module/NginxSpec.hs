@@ -29,6 +29,10 @@ tests =
                                 , vhostHttpPort = Just 80
                                 , vhostHttpsPort = Just 443
                                 , vhostProxyPass = Just "http://backend:3000"
+                                , vhostPolicies =
+                                    [ NetworkPolicy
+                                        (requireRight (Network.fallbackPolicy (Network.PortResource (Network.Port 80)) [Network.PortResource (Network.Port 8080)]))
+                                    ]
                                 }
                             ]
                         , nginxPolicies =
@@ -46,6 +50,17 @@ tests =
                         }
              in assertBool "unexpected virtual_hosts key" $
                     not ("virtual_hosts" `isInfixOf` BSLC.unpack (encode cfg))
+        , testCase "defaults virtual host policies to empty when absent" $
+            let json = "{\"domain\":\"example.com\"}"
+                expected =
+                    NginxVirtualHost
+                        { vhostDomain = "example.com"
+                        , vhostHttpPort = Nothing
+                        , vhostHttpsPort = Nothing
+                        , vhostProxyPass = Nothing
+                        , vhostPolicies = []
+                        }
+             in decode json @?= Just expected
         ]
 
 requireRight :: (Show e) => Either e a -> a

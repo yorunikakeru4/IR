@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- `IR.Domain.Module.Nginx.VirtualHost`: `NginxVirtualHost` gains
+  `vhostPolicies :: [Policy]`, serialized as an optional `policies` key and
+  defaulting to `[]` when absent.
 - `IR.Domain.Module.Docker`: removed. `DockerConfig` and `StorageDriver` are no longer part of the IR.
 - `IR.Domain.Module`: removed `DockerDomain` constructor from `ModuleDomain`.
 - `IR.Types`: removed `mmDocker :: [DockerConfig]` field from `ModuleMap`. `emptyModuleMap`, `mmIsEmpty`, `ToJSON`, and `FromJSON` updated accordingly. `ModuleMap` now has three fields: `mmPostgreSQL`, `mmNginx`, `mmForgejo`.

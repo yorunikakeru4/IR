@@ -2,6 +2,7 @@
 
 module Domain.Module.Nginx.VirtualHost (
     NginxVirtualHost (..),
+    emptyNginxVirtualHostConfig,
 ) where
 
 import Data.Aeson
@@ -16,6 +17,16 @@ data NginxVirtualHost = NginxVirtualHost
     , policies :: [Policy]
     }
     deriving (Eq, Show)
+
+emptyNginxVirtualHostConfig :: NginxVirtualHost
+emptyNginxVirtualHostConfig =
+    NginxVirtualHost
+        { domain = ""
+        , httpPort = Nothing
+        , httpsPort = Nothing
+        , proxyPass = Nothing
+        , policies = []
+        }
 
 instance ToJSON NginxVirtualHost where
     toJSON vh =

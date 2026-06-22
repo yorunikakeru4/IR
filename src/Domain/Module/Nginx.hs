@@ -2,12 +2,13 @@
 
 module Domain.Module.Nginx (
     NginxConfig (..),
+    emptyNginxConfig,
 ) where
 
 import Data.Aeson
 import qualified Data.Text as T
 import Domain.Error (renderDomainError)
-import Domain.Module (ModuleName, mkModuleName, moduleNameText)
+import Domain.Module (ModuleDomain (NginxDomain), ModuleName, mkModuleName, moduleDomainName, moduleNameText)
 import Domain.Module.Nginx.VirtualHost (NginxVirtualHost)
 import Policy (Policy)
 
@@ -18,6 +19,15 @@ data NginxConfig = NginxConfig
     , policies :: [Policy]
     }
     deriving (Eq, Show)
+
+emptyNginxConfig :: NginxConfig
+emptyNginxConfig =
+    NginxConfig
+        { configName = moduleDomainName NginxDomain
+        , enable = True
+        , virtualHosts = []
+        , policies = []
+        }
 
 instance ToJSON NginxConfig where
     toJSON nc =

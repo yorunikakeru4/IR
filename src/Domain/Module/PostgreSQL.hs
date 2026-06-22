@@ -2,13 +2,14 @@
 
 module Domain.Module.PostgreSQL (
     PostgreSQLConfig (..),
+    emptyPostgreSQLConfig,
 ) where
 
 import Data.Aeson
 import Data.Text (Text)
 import qualified Data.Text as T
 import Domain.Error (renderDomainError)
-import Domain.Module (ModuleName, mkModuleName, moduleNameText)
+import Domain.Module (ModuleDomain (PostgreSQLDomain), ModuleName, mkModuleName, moduleDomainName, moduleNameText)
 import Policy (Policy)
 
 data PostgreSQLConfig = PostgreSQLConfig
@@ -20,6 +21,17 @@ data PostgreSQLConfig = PostgreSQLConfig
     , policies :: [Policy]
     }
     deriving (Eq, Show)
+
+emptyPostgreSQLConfig :: PostgreSQLConfig
+emptyPostgreSQLConfig =
+    PostgreSQLConfig
+        { configName = moduleDomainName PostgreSQLDomain
+        , enable = True
+        , port = Nothing
+        , dataDir = Nothing
+        , maxConnections = Nothing
+        , policies = []
+        }
 
 instance ToJSON PostgreSQLConfig where
     toJSON pc =

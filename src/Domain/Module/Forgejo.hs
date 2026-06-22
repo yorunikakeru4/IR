@@ -2,16 +2,16 @@
 
 module Domain.Module.Forgejo (
     ForgejoConfig (..),
+    emptyForgejoConfig,
 ) where
 
 import Data.Aeson
 import Data.Text (Text)
 import qualified Data.Text as T
 import Domain.Error (renderDomainError)
-import Domain.Module (ModuleName, mkModuleName, moduleNameText)
+import Domain.Module (ModuleDomain (ForgejoDomain), ModuleName, mkModuleName, moduleDomainName, moduleNameText)
 import Policy (Policy)
 
--- Raw forgejo configuration, for
 data ForgejoConfig = ForgejoConfig
     { configName :: ModuleName
     , enable :: Bool
@@ -21,6 +21,17 @@ data ForgejoConfig = ForgejoConfig
     , policies :: [Policy]
     }
     deriving (Eq, Show)
+
+emptyForgejoConfig :: ForgejoConfig
+emptyForgejoConfig =
+    ForgejoConfig
+        { configName = moduleDomainName ForgejoDomain
+        , enable = True
+        , httpPort = Nothing
+        , sshPort = Nothing
+        , domain = Nothing
+        , policies = []
+        }
 
 instance ToJSON ForgejoConfig where
     toJSON fc =

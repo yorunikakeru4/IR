@@ -33,6 +33,7 @@ import Domain.Module.Nginx (NginxConfig)
 import qualified Domain.Module.PostgreSQL as PostgreSQL
 import Domain.Module.PostgreSQL (PostgreSQLConfig)
 import Domain.Package (PackageName, mkPackageName, packageNameText)
+import Domain.User (UserConfig)
 import Policy (Policy)
 
 {- | Monotonically incrementing IR schema version.
@@ -45,7 +46,7 @@ newtype IRVersion = IRVersion Int
 changes, including condition/action sums and module config shapes.
 -}
 currentIRVersion :: IRVersion
-currentIRVersion = IRVersion 6
+currentIRVersion = IRVersion 7
 
 -- | User-defined name for a profile section.
 newtype ProfileName = ProfileName Text
@@ -106,6 +107,7 @@ data IRDocument = IRDocument
     , irPackages :: [PackageName]
     , irModules :: ModuleMap
     , irProfiles :: [ProfileSection]
+    , irUsers :: [UserConfig]
     }
     deriving (Eq, Show)
 
@@ -150,11 +152,13 @@ instance ToJSON IRDocument where
             ["version" .= irVersion doc, "profiles" .= irProfiles doc]
                 <> omitEmpty "packages" (irPackages doc)
                 <> (if mmIsEmpty (irModules doc) then [] else ["modules" .= irModules doc])
+                <> omitEmpty "users" (irUsers doc)
 
 instance FromJSON IRDocument where
     parseJSON = withObject "IRDocument" $ \o ->
         IRDocument
-            <$> o .: "version"
+            <$> o .:  "version"
             <*> o .:? "packages" .!= []
-            <*> o .:? "modules" .!= emptyModuleMap
-            <*> o .: "profiles"
+            <*> o .:? "modules"  .!= emptyModuleMap
+            <*> o .:  "profiles"
+            <*> o .:? "users"    .!= []

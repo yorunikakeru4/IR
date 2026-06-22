@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+- `IR.Domain.Network`: added `NetworkConfig { networkAllowPorts :: [Port] }` and
+  `emptyNetworkConfig`. `AllowPorts` constructor removed from `Policy`; `allowPortsPolicy`
+  removed. Port allowances now live in `IRDocument.irNetwork`, not in module policies.
+- `IR.Types`: `IRDocument` gains `irNetwork :: NetworkConfig`; serialized as an optional
+  `"network": { "allow_ports": [...] }` key (omitted when empty). `currentIRVersion`
+  bumped from 7 to 8.
+- `IR.Policy`: `allow_ports` case removed from `FromJSON`; only `fallback` remains.
+
 - `IR.Domain.Module`: added `moduleDomainName :: ModuleDomain -> ModuleName`.
 - `IR.Domain.Module.Nginx.VirtualHost`: `NginxVirtualHost` gains
   `vhostPolicies :: [Policy]`, serialized as an optional `policies` key and

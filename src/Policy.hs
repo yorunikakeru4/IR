@@ -39,7 +39,6 @@ instance FromJSON Policy where
             ( \o -> do
                 t <- o .: "type" :: Parser Text
                 case t of
-                    "allow_ports" -> NetworkPolicy <$> parseJSON v
                     "fallback" -> NetworkPolicy <$> parseJSON v
                     _unknownType -> fail $ "unknown policy type: " <> T.unpack t
             )

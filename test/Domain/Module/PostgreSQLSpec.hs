@@ -5,8 +5,6 @@ module Domain.Module.PostgreSQLSpec (tests) where
 import Data.Aeson (decode, encode)
 import Domain.Module (mkModuleName)
 import Domain.Module.PostgreSQL
-import qualified Domain.Network as Network
-import Policy (Policy (NetworkPolicy))
 import Test.Tasty
 import Test.Tasty.HUnit
 
@@ -35,8 +33,7 @@ tests =
                         , port = Just 5432
                         , dataDir = Just "/var/lib/postgresql"
                         , maxConnections = Just 200
-                        , policies =
-                            [NetworkPolicy (requireRight (Network.allowPortsPolicy (Network.ports [5432])))]
+                        , policies = []
                         }
              in decode (encode cfg) @?= Just cfg
         , testCase "rejects empty name in JSON" $

@@ -1,13 +1,14 @@
 {-# LANGUAGE OverloadedStrings #-}
 
--- | Network-related IR nodes: port allocation policies.
+-- | Network-related IR nodes: port allocation and fallback policies.
 module Domain.Network (
     Port (..),
     Resource (..),
     Policy,
-    allowPortsPolicy,
     fallbackPolicy,
     ports,
+    NetworkConfig (..),
+    emptyNetworkConfig,
 )
 where
 
@@ -29,21 +30,30 @@ data Resource
 
 -- | Network-domain policies for port allocation.
 data Policy
-    = -- | Declare that a set of ports is permitted for the service.
-      AllowPorts [Port]
-    | -- | Prefer the primary resource; fall back to alternatives if unavailable.
+    = -- | Prefer the primary resource; fall back to alternatives if unavailable.
       Fallback Resource [Resource]
     deriving (Eq, Show)
-
-allowPortsPolicy :: [Port] -> Either DomainError Policy
-allowPortsPolicy [] = Left (EmptyList "AllowPorts")
-allowPortsPolicy ps = Right (AllowPorts ps)
 
 fallbackPolicy :: Resource -> [Resource] -> Either DomainError Policy
 fallbackPolicy _primary [] = Left (EmptyList "FallbackCandidates")
 fallbackPolicy primary alts = Right (Fallback primary alts)
 
--- | Convert a list of **raw** port numbers to 'Port' values. This is a convenience function for constructing 'Policy' values from raw data.
+-- | Global network configuration: ports explicitly permitted through the firewall.
+data NetworkConfig = NetworkConfig
+    { networkAllowPorts :: [Port]
+    }
+    deriving (Eq, Show)
+
+emptyNetworkConfig :: NetworkConfig
+emptyNetworkConfig = NetworkConfig []
+
+instance Semigroup NetworkConfig where
+    NetworkConfig a <> NetworkConfig b = NetworkConfig (a <> b)
+
+instance Monoid NetworkConfig where
+    mempty = emptyNetworkConfig
+
+-- | Convert a list of **raw** port numbers to 'Port' values.
 ports :: [Word16] -> [Port]
 ports = map Port
 
@@ -65,8 +75,6 @@ instance FromJSON Resource where
             _unknownType -> fail $ "unknown resource type: " <> T.unpack t
 
 instance ToJSON Policy where
-    toJSON (AllowPorts ps) =
-        object ["type" .= ("allow_ports" :: Text), "values" .= ps]
     toJSON (Fallback primary alts) =
         object
             [ "type" .= ("fallback" :: Text)
@@ -78,11 +86,15 @@ instance FromJSON Policy where
     parseJSON = withObject "Network.Policy" $ \o -> do
         t <- o .: "type" :: Parser Text
         case t of
-            "allow_ports" -> do
-                ps <- o .: "values"
-                parseDomain (allowPortsPolicy ps)
             "fallback" -> do
                 primary <- o .: "primary"
                 alts <- o .: "alternatives"
                 parseDomain (fallbackPolicy primary alts)
             _unknownType -> fail $ "unknown network policy: " <> T.unpack t
+
+instance ToJSON NetworkConfig where
+    toJSON (NetworkConfig ps) = object ["allow_ports" .= ps]
+
+instance FromJSON NetworkConfig where
+    parseJSON = withObject "NetworkConfig" $ \o ->
+        NetworkConfig <$> o .: "allow_ports"

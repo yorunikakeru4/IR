@@ -109,14 +109,10 @@ instance Arbitrary Network.Resource where
 
 -- Policy constructors are not exported; smart constructors + listOf1 guarantee validity.
 instance Arbitrary Network.Policy where
-    arbitrary =
-        oneof
-            [ requireRight . Network.allowPortsPolicy <$> listOf1 arbitrary
-            , do
-                primary <- arbitrary
-                alts <- listOf1 arbitrary
-                pure (requireRight (Network.fallbackPolicy primary alts))
-            ]
+    arbitrary = do
+        primary <- arbitrary
+        alts <- listOf1 arbitrary
+        pure (requireRight (Network.fallbackPolicy primary alts))
     shrink _ = []
 
 instance Arbitrary Power.PowerProfile where

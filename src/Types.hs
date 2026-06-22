@@ -32,6 +32,7 @@ import qualified Domain.Module.Nginx as Nginx
 import Domain.Module.Nginx (NginxConfig)
 import qualified Domain.Module.PostgreSQL as PostgreSQL
 import Domain.Module.PostgreSQL (PostgreSQLConfig)
+import Domain.Network (NetworkConfig, emptyNetworkConfig, networkAllowPorts)
 import Domain.Package (PackageName, mkPackageName, packageNameText)
 import Domain.User (UserConfig)
 import Policy (Policy)
@@ -46,7 +47,7 @@ newtype IRVersion = IRVersion Int
 changes, including condition/action sums and module config shapes.
 -}
 currentIRVersion :: IRVersion
-currentIRVersion = IRVersion 7
+currentIRVersion = IRVersion 8
 
 -- | User-defined name for a profile section.
 newtype ProfileName = ProfileName Text
@@ -108,6 +109,7 @@ data IRDocument = IRDocument
     , irModules :: ModuleMap
     , irProfiles :: [ProfileSection]
     , irUsers :: [UserConfig]
+    , irNetwork :: NetworkConfig
     }
     deriving (Eq, Show)
 
@@ -153,6 +155,7 @@ instance ToJSON IRDocument where
                 <> omitEmpty "packages" (irPackages doc)
                 <> (if mmIsEmpty (irModules doc) then [] else ["modules" .= irModules doc])
                 <> omitEmpty "users" (irUsers doc)
+                <> (if null (networkAllowPorts (irNetwork doc)) then [] else ["network" .= irNetwork doc])
 
 instance FromJSON IRDocument where
     parseJSON = withObject "IRDocument" $ \o ->
@@ -162,3 +165,4 @@ instance FromJSON IRDocument where
             <*> o .:? "modules"  .!= emptyModuleMap
             <*> o .:  "profiles"
             <*> o .:? "users"    .!= []
+            <*> o .:? "network"  .!= emptyNetworkConfig

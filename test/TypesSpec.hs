@@ -6,6 +6,7 @@ import Arbitraries ()
 import Data.Aeson (decode, encode)
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Lazy as BSL
+import Domain.Network (emptyNetworkConfig)
 import Test.Tasty
 import Test.Tasty.HUnit
 import Test.Tasty.QuickCheck
@@ -35,8 +36,8 @@ tests =
         , testCase "omits services key" $
             assertBool "unexpected services key" $
                 not ("\"services\"" `BS.isInfixOf` BSL.toStrict (encode emptyDoc))
-        , testCase "currentIRVersion is 7" $
-            currentIRVersion @?= IRVersion 7
+        , testCase "currentIRVersion is 8" $
+            currentIRVersion @?= IRVersion 8
         , testGroup
             "properties"
             [ testProperty "profileNameText . mkProfileName roundtrips non-empty text" $
@@ -54,4 +55,5 @@ emptyDoc =
         , irModules = emptyModuleMap
         , irProfiles = []
         , irUsers = []
+        , irNetwork = emptyNetworkConfig
         }

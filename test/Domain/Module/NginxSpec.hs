@@ -8,7 +8,7 @@ import Data.List (isInfixOf)
 import Domain.Module (mkModuleName)
 import qualified Domain.Module.Nginx as NG
 import qualified Domain.Module.Nginx.VirtualHost as VH
-import qualified Domain.Network as Network
+import qualified Domain.Network as Network (Resource (..), Port (..), fallbackPolicy)
 import Policy (Policy (NetworkPolicy))
 import Test.Tasty
 import Test.Tasty.HUnit
@@ -35,8 +35,7 @@ tests =
                                     ]
                                 }
                             ]
-                        , NG.policies =
-                            [NetworkPolicy (requireRight (Network.allowPortsPolicy (Network.ports [80, 443])))]
+                        , NG.policies = []
                         }
              in decode (encode cfg) @?= Just cfg
         , testCase "omits virtual_hosts when empty" $

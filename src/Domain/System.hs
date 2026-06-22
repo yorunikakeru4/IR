@@ -49,11 +49,11 @@ data Condition
 
 attachStrategy :: ObserveStrategy -> Condition -> Either DomainError Condition
 attachStrategy strategy cond = case cond of
-    CpuLoad threshold obs    -> CpuLoad threshold <$> set obs
+    CpuLoad threshold obs -> CpuLoad threshold <$> set obs
     BatteryBelow percent obs -> BatteryBelow percent <$> set obs
     BatteryAbove percent obs -> BatteryAbove percent <$> set obs
   where
-    set Nothing  = Right (Just strategy)
+    set Nothing = Right (Just strategy)
     set (Just _) = Left StrategyConflict
 
 instance ToJSON Condition where

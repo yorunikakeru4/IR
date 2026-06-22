@@ -41,7 +41,7 @@ renderDomainError StrategyConflict = "observation strategy was already set"
 renderDomainError DuplicateCondition = "a profile may have at most one when condition"
 renderDomainError (UnknownPowerProfile t) = "unrecognized power profile: " <> t
 
-parseDomain :: MonadFail m => Either DomainError a -> m a
+parseDomain :: (MonadFail m) => Either DomainError a -> m a
 parseDomain = either (fail . T.unpack . renderDomainError) pure
 
 mkThreshold :: (Double -> a) -> Double -> Either DomainError a

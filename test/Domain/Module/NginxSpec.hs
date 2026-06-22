@@ -8,7 +8,7 @@ import Data.List (isInfixOf)
 import Domain.Module (mkModuleName)
 import qualified Domain.Module.Nginx as NG
 import qualified Domain.Module.Nginx.VirtualHost as VH
-import qualified Domain.Network as Network (Resource (..), Port (..), fallbackPolicy)
+import qualified Domain.Network as Network (Port (..), Resource (..), fallbackPolicy)
 import Policy (Policy (NetworkPolicy))
 import Test.Tasty
 import Test.Tasty.HUnit

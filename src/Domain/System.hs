@@ -48,18 +48,13 @@ data Condition
     deriving (Eq, Show)
 
 attachStrategy :: ObserveStrategy -> Condition -> Either DomainError Condition
-attachStrategy strategy (CpuLoad threshold Nothing) =
-    Right (CpuLoad threshold (Just strategy))
-attachStrategy _strategy (CpuLoad _threshold (Just _existingStrategy)) =
-    Left StrategyConflict
-attachStrategy strategy (BatteryBelow percent Nothing) =
-    Right (BatteryBelow percent (Just strategy))
-attachStrategy _strategy (BatteryBelow _percent (Just _existingStrategy)) =
-    Left StrategyConflict
-attachStrategy strategy (BatteryAbove percent Nothing) =
-    Right (BatteryAbove percent (Just strategy))
-attachStrategy _strategy (BatteryAbove _percent (Just _existingStrategy)) =
-    Left StrategyConflict
+attachStrategy strategy cond = case cond of
+    CpuLoad threshold obs    -> CpuLoad threshold <$> set obs
+    BatteryBelow percent obs -> BatteryBelow percent <$> set obs
+    BatteryAbove percent obs -> BatteryAbove percent <$> set obs
+  where
+    set Nothing  = Right (Just strategy)
+    set (Just _) = Left StrategyConflict
 
 instance ToJSON Condition where
     toJSON (CpuLoad t obs) =

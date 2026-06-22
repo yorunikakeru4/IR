@@ -53,14 +53,12 @@ data Condition
     deriving (Eq, Show)
 
 attachStrategy :: ObserveStrategy -> Condition -> Either DomainError Condition
-attachStrategy strategy (ProcessRunning name Nothing) =
-    Right (ProcessRunning name (Just strategy))
-attachStrategy _strategy (ProcessRunning _name (Just _existingStrategy)) =
-    Left StrategyConflict
-attachStrategy strategy (AppRunning name Nothing) =
-    Right (AppRunning name (Just strategy))
-attachStrategy _strategy (AppRunning _name (Just _existingStrategy)) =
-    Left StrategyConflict
+attachStrategy strategy cond = case cond of
+    ProcessRunning name obs -> ProcessRunning name <$> set obs
+    AppRunning name obs     -> AppRunning name <$> set obs
+  where
+    set Nothing  = Right (Just strategy)
+    set (Just _) = Left StrategyConflict
 
 instance ToJSON Condition where
     toJSON (ProcessRunning (ProcessName n) obs) =

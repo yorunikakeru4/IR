@@ -15,7 +15,7 @@ import Data.Aeson
 import Data.Aeson.Types (Parser)
 import Data.Text (Text)
 import qualified Data.Text as T
-import Domain.Error (DomainError, mkName, renderDomainError)
+import Domain.Error (DomainError, mkName, parseDomain)
 
 data ModuleDomain
     = PostgreSQLDomain
@@ -56,7 +56,7 @@ instance ToJSON ModuleName where
 instance FromJSON ModuleName where
     parseJSON value = do
         name <- parseJSON value
-        either (fail . T.unpack . renderDomainError) pure (mkModuleName name)
+        parseDomain (mkModuleName name)
 
 data ModuleRef = ModuleRef
     { moduleRefDomain :: ModuleDomain

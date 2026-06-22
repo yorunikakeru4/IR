@@ -21,8 +21,8 @@ import Data.Aeson
 import Data.Aeson.Types (Parser)
 import Data.Text (Text)
 import qualified Data.Text as T
-import Domain.Error (DomainError (StrategyConflict), mkName, renderDomainError)
-import ObserveStrategy (IntervalMs, ObserveStrategy (..), intervalMilliseconds, mkIntervalMs)
+import Domain.Error (DomainError (StrategyConflict), mkName, parseDomain)
+import ObserveStrategy (IntervalMs, ObserveStrategy (..), intervalMilliseconds, mkIntervalMs, observeField)
 
 -- | Name of a system process as it appears in the process table.
 newtype ProcessName = ProcessName Text
@@ -66,11 +66,11 @@ instance ToJSON Condition where
     toJSON (ProcessRunning (ProcessName n) obs) =
         object $
             ["type" .= ("process_running" :: Text), "name" .= n]
-                <> maybe [] (\s -> ["observe" .= s]) obs
+                <> observeField obs
     toJSON (AppRunning (AppName n) obs) =
         object $
             ["type" .= ("app_running" :: Text), "name" .= n]
-                <> maybe [] (\s -> ["observe" .= s]) obs
+                <> observeField obs
 
 instance FromJSON Condition where
     parseJSON = withObject "Process.Condition" $ \o -> do
@@ -78,10 +78,10 @@ instance FromJSON Condition where
         case t of
             "process_running" -> do
                 name <- o .: "name"
-                processName <- either (fail . T.unpack . renderDomainError) pure (mkProcessName name)
+                processName <- parseDomain (mkProcessName name)
                 ProcessRunning processName <$> o .:? "observe"
             "app_running" -> do
                 name <- o .: "name"
-                appName <- either (fail . T.unpack . renderDomainError) pure (mkAppName name)
+                appName <- parseDomain (mkAppName name)
                 AppRunning appName <$> o .:? "observe"
             _unknownType -> fail $ "unknown process condition: " <> T.unpack t

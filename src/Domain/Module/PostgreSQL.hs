@@ -7,8 +7,7 @@ module Domain.Module.PostgreSQL (
 
 import Data.Aeson
 import Data.Text (Text)
-import qualified Data.Text as T
-import Domain.Error (renderDomainError)
+import Domain.Error (parseDomain)
 import Domain.Module (ModuleDomain (PostgreSQLDomain), ModuleName, mkModuleName, moduleDomainName, moduleNameText)
 import Policy (Policy)
 
@@ -45,7 +44,7 @@ instance ToJSON PostgreSQLConfig where
 instance FromJSON PostgreSQLConfig where
     parseJSON = withObject "PostgreSQLConfig" $ \o -> do
         rawName <- o .: "name"
-        name <- either (fail . T.unpack . renderDomainError) pure (mkModuleName rawName)
+        name <- parseDomain (mkModuleName rawName)
         PostgreSQLConfig name
             <$> o .: "enable"
             <*> o .:? "port"

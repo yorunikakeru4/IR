@@ -9,8 +9,7 @@ module Domain.Package (
 
 import Data.Aeson
 import Data.Text (Text)
-import qualified Data.Text as T
-import Domain.Error (DomainError, mkName, renderDomainError)
+import Domain.Error (DomainError, mkName, parseDomain)
 
 -- | Name of a FrogOS-managed package as declared in package metadata.
 newtype PackageName = PackageName Text
@@ -28,4 +27,4 @@ instance ToJSON PackageName where
 instance FromJSON PackageName where
     parseJSON value = do
         name <- parseJSON value
-        either (fail . T.unpack . renderDomainError) pure (mkPackageName name)
+        parseDomain (mkPackageName name)

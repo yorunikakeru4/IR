@@ -7,8 +7,7 @@ module Domain.Module.Forgejo (
 
 import Data.Aeson
 import Data.Text (Text)
-import qualified Data.Text as T
-import Domain.Error (renderDomainError)
+import Domain.Error (parseDomain)
 import Domain.Module (ModuleDomain (ForgejoDomain), ModuleName, mkModuleName, moduleDomainName, moduleNameText)
 import Policy (Policy)
 
@@ -45,7 +44,7 @@ instance ToJSON ForgejoConfig where
 instance FromJSON ForgejoConfig where
     parseJSON = withObject "ForgejoConfig" $ \o -> do
         rawName <- o .: "name"
-        name <- either (fail . T.unpack . renderDomainError) pure (mkModuleName rawName)
+        name <- parseDomain (mkModuleName rawName)
         ForgejoConfig name
             <$> o .: "enable"
             <*> o .:? "http_port"

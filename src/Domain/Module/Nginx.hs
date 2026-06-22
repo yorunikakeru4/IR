@@ -6,8 +6,7 @@ module Domain.Module.Nginx (
 ) where
 
 import Data.Aeson
-import qualified Data.Text as T
-import Domain.Error (renderDomainError)
+import Domain.Error (parseDomain)
 import Domain.Module (ModuleDomain (NginxDomain), ModuleName, mkModuleName, moduleDomainName, moduleNameText)
 import Domain.Module.Nginx.VirtualHost (NginxVirtualHost)
 import Policy (Policy)
@@ -39,7 +38,7 @@ instance ToJSON NginxConfig where
 instance FromJSON NginxConfig where
     parseJSON = withObject "NginxConfig" $ \o -> do
         rawName <- o .: "name"
-        name <- either (fail . T.unpack . renderDomainError) pure (mkModuleName rawName)
+        name <- parseDomain (mkModuleName rawName)
         NginxConfig name
             <$> o .: "enable"
             <*> o .:? "virtual_hosts" .!= []

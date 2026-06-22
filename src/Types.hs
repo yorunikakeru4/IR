@@ -13,6 +13,7 @@ module Types (
     ModuleMap (..),
     emptyModuleMap,
     mmIsEmpty,
+    moduleMapEntries,
     IRDocument (..),
     PackageName,
     mkPackageName,
@@ -23,10 +24,13 @@ import Action (Action)
 import Condition (Condition)
 import Data.Aeson
 import Data.Text (Text)
-import qualified Data.Text as T
-import Domain.Error (DomainError, mkName, renderDomainError)
+import Domain.Error (DomainError, mkName, parseDomain)
+import qualified Domain.Module as Module
+import qualified Domain.Module.Forgejo as Forgejo
 import Domain.Module.Forgejo (ForgejoConfig)
+import qualified Domain.Module.Nginx as Nginx
 import Domain.Module.Nginx (NginxConfig)
+import qualified Domain.Module.PostgreSQL as PostgreSQL
 import Domain.Module.PostgreSQL (PostgreSQLConfig)
 import Domain.Package (PackageName, mkPackageName, packageNameText)
 import Policy (Policy)
@@ -76,6 +80,12 @@ emptyModuleMap = ModuleMap{mmPostgreSQL = [], mmNginx = [], mmForgejo = []}
 mmIsEmpty :: ModuleMap -> Bool
 mmIsEmpty mm = null (mmPostgreSQL mm) && null (mmNginx mm) && null (mmForgejo mm)
 
+moduleMapEntries :: ModuleMap -> [(Module.ModuleDomain, Module.ModuleName)]
+moduleMapEntries mm =
+    [(Module.PostgreSQLDomain, PostgreSQL.configName cfg) | cfg <- mmPostgreSQL mm]
+        <> [(Module.NginxDomain, Nginx.configName cfg) | cfg <- mmNginx mm]
+        <> [(Module.ForgejoDomain, Forgejo.configName cfg) | cfg <- mmForgejo mm]
+
 instance ToJSON ModuleMap where
     toJSON mm =
         object $
@@ -111,7 +121,7 @@ instance ToJSON ProfileName where
 instance FromJSON ProfileName where
     parseJSON value = do
         name <- parseJSON value
-        either (fail . T.unpack . renderDomainError) pure (mkProfileName name)
+        parseDomain (mkProfileName name)
 
 -- | Serialise a list field, omitting the key entirely when the list is empty.
 omitEmpty :: (ToJSON a, KeyValue e kv) => Key -> [a] -> [kv]

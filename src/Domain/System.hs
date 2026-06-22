@@ -16,8 +16,8 @@ import Data.Aeson
 import Data.Aeson.Types (Parser)
 import Data.Text (Text)
 import qualified Data.Text as T
-import Domain.Error (DomainError (StrategyConflict), mkPercent, mkThreshold, renderDomainError)
-import ObserveStrategy (ObserveStrategy)
+import Domain.Error (DomainError (StrategyConflict), mkPercent, mkThreshold, parseDomain)
+import ObserveStrategy (ObserveStrategy, observeField)
 
 newtype CpuLoadThreshold = CpuLoadThreshold Double
     deriving (Eq, Show)
@@ -65,15 +65,15 @@ instance ToJSON Condition where
     toJSON (CpuLoad t obs) =
         object $
             ["type" .= ("cpu_load" :: Text), "threshold" .= cpuLoadThresholdValue t]
-                <> maybe [] (\s -> ["observe" .= s]) obs
+                <> observeField obs
     toJSON (BatteryBelow p obs) =
         object $
             ["type" .= ("battery_below" :: Text), "percent" .= batteryPercentValue p]
-                <> maybe [] (\s -> ["observe" .= s]) obs
+                <> observeField obs
     toJSON (BatteryAbove p obs) =
         object $
             ["type" .= ("battery_above" :: Text), "percent" .= batteryPercentValue p]
-                <> maybe [] (\s -> ["observe" .= s]) obs
+                <> observeField obs
 
 instance FromJSON Condition where
     parseJSON = withObject "System.Condition" $ \o -> do
@@ -81,14 +81,14 @@ instance FromJSON Condition where
         case t of
             "cpu_load" -> do
                 raw <- o .: "threshold"
-                threshold <- either (fail . T.unpack . renderDomainError) pure (mkCpuLoadThreshold raw)
+                threshold <- parseDomain (mkCpuLoadThreshold raw)
                 CpuLoad threshold <$> o .:? "observe"
             "battery_below" -> do
                 raw <- o .: "percent"
-                percent <- either (fail . T.unpack . renderDomainError) pure (mkBatteryPercent raw)
+                percent <- parseDomain (mkBatteryPercent raw)
                 BatteryBelow percent <$> o .:? "observe"
             "battery_above" -> do
                 raw <- o .: "percent"
-                percent <- either (fail . T.unpack . renderDomainError) pure (mkBatteryPercent raw)
+                percent <- parseDomain (mkBatteryPercent raw)
                 BatteryAbove percent <$> o .:? "observe"
             _unknownType -> fail $ "unknown system condition: " <> T.unpack t

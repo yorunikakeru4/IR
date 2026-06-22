@@ -37,6 +37,7 @@ library
     Domain.Power
     Domain.Process
     Domain.System
+    Domain.User
     ObserveStrategy
     Policy
     Types
@@ -56,25 +57,26 @@ test-suite frogos-ir-test
   other-modules:
     Arbitraries
     Domain.ErrorSpec
-    Domain.ModuleSpec
     Domain.Module.NginxSpec
     Domain.Module.PostgreSQLSpec
+    Domain.ModuleSpec
     Domain.NetworkSpec
     Domain.PackageSpec
     Domain.PowerSpec
     Domain.ProcessSpec
     Domain.SystemSpec
+    Domain.UserSpec
     TypesSpec
 
   build-depends:
-    , aeson              ^>=2.2
-    , base               ^>=4.20.2.0
-    , bytestring         ^>=0.12
+    , aeson             ^>=2.2
+    , base              ^>=4.20.2.0
+    , bytestring        ^>=0.12
     , frogos-ir
-    , QuickCheck         ^>=2.14 || ^>=2.15 || ^>=2.16 || ^>=2.17 || ^>=2.18
-    , tasty              ^>=1.5
-    , tasty-hunit        ^>=0.10
-    , tasty-quickcheck   ^>=0.11
-    , text               ^>=2.1
+    , QuickCheck        ^>=2.14     || ^>=2.15 || ^>=2.16 || ^>=2.17 || ^>=2.18
+    , tasty             ^>=1.5
+    , tasty-hunit       ^>=0.10
+    , tasty-quickcheck  ^>=0.11
+    , text              ^>=2.1
 
   default-language: Haskell2010

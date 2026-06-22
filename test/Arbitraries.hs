@@ -8,6 +8,7 @@ import qualified Domain.Package as Package
 import qualified Domain.Power as Power
 import qualified Domain.Process as Process
 import qualified Domain.System as System
+import qualified Domain.User as User
 import ObserveStrategy (IntervalMs, ObserveStrategy (..), intervalMilliseconds, mkIntervalMs)
 import Test.QuickCheck
 import Types (ProfileName, mkProfileName, profileNameText)
@@ -133,3 +134,23 @@ instance Arbitrary ProfileName where
         | str <- shrink (T.unpack (profileNameText name))
         , Right candidate <- [mkProfileName (T.pack str)]
         ]
+
+instance Arbitrary User.UserName where
+    arbitrary = requireRight . User.mkUserName . T.pack <$> listOf1 arbitrary
+    shrink name =
+        [ candidate
+        | str <- shrink (T.unpack (User.userNameText name))
+        , Right candidate <- [User.mkUserName (T.pack str)]
+        ]
+
+instance Arbitrary User.UserConfig where
+    arbitrary =
+        User.UserConfig
+            <$> arbitrary
+            <*> arbitrary
+            <*> (T.pack <$> arbitrary)
+            <*> listOf (T.pack <$> listOf1 arbitrary)
+            <*> arbitrary
+    shrink cfg =
+        [cfg{User.userName = n} | n <- shrink (User.userName cfg)]
+            <> [cfg{User.packages = ps} | ps <- shrink (User.packages cfg)]

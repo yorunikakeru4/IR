@@ -26,12 +26,12 @@ import Data.Aeson
 import Data.Text (Text)
 import Domain.Error (DomainError, mkName, parseDomain)
 import qualified Domain.Module as Module
-import qualified Domain.Module.Forgejo as Forgejo
 import Domain.Module.Forgejo (ForgejoConfig)
-import qualified Domain.Module.Nginx as Nginx
+import qualified Domain.Module.Forgejo as Forgejo
 import Domain.Module.Nginx (NginxConfig)
-import qualified Domain.Module.PostgreSQL as PostgreSQL
+import qualified Domain.Module.Nginx as Nginx
 import Domain.Module.PostgreSQL (PostgreSQLConfig)
+import qualified Domain.Module.PostgreSQL as PostgreSQL
 import Domain.Network (NetworkConfig, emptyNetworkConfig, networkAllowPorts)
 import Domain.Package (PackageName, mkPackageName, packageNameText)
 import Domain.User (UserConfig)
@@ -47,7 +47,7 @@ newtype IRVersion = IRVersion Int
 changes, including condition/action sums and module config shapes.
 -}
 currentIRVersion :: IRVersion
-currentIRVersion = IRVersion 8
+currentIRVersion = IRVersion 9
 
 -- | User-defined name for a profile section.
 newtype ProfileName = ProfileName Text
@@ -160,9 +160,9 @@ instance ToJSON IRDocument where
 instance FromJSON IRDocument where
     parseJSON = withObject "IRDocument" $ \o ->
         IRDocument
-            <$> o .:  "version"
+            <$> o .: "version"
             <*> o .:? "packages" .!= []
-            <*> o .:? "modules"  .!= emptyModuleMap
-            <*> o .:  "profiles"
-            <*> o .:? "users"    .!= []
-            <*> o .:? "network"  .!= emptyNetworkConfig
+            <*> o .:? "modules" .!= emptyModuleMap
+            <*> o .: "profiles"
+            <*> o .:? "users" .!= []
+            <*> o .:? "network" .!= emptyNetworkConfig

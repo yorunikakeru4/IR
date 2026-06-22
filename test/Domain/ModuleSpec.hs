@@ -57,9 +57,13 @@ tests =
             , testCase "round-trips DisableModule with priority" $
                 let a = DisableModule (ModuleRef PostgreSQLDomain (unsafeName "main")) 100
                  in decode (encode a) @?= Just a
-            , testCase "round-trips RestartModule" $
-                let a = RestartModule (ModuleRef NginxDomain (unsafeName "web"))
+            , testCase "round-trips RestartModule with priority" $
+                let a = RestartModule (ModuleRef NginxDomain (unsafeName "web")) 80
                  in decode (encode a) @?= Just a
+            , testCase "decodes RestartModule without priority field defaults to 100" $
+                decode
+                    "{\"type\":\"module_restart\",\"module\":{\"domain\":\"nginx\",\"name\":\"web\"}}"
+                    @?= Just (RestartModule (ModuleRef NginxDomain (unsafeName "web")) 100)
             , testCase "decodes EnableModule without priority field defaults to 100" $
                 decode
                     "{\"type\":\"module_enable\",\"module\":{\"domain\":\"nginx\",\"name\":\"nginx\"}}"

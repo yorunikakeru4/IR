@@ -80,7 +80,7 @@ instance FromJSON ModuleRef where
 data LifecycleAction
     = EnableModule ModuleRef Int
     | DisableModule ModuleRef Int
-    | RestartModule ModuleRef
+    | RestartModule ModuleRef Int
     deriving (Eq, Show)
 
 instance ToJSON LifecycleAction where
@@ -88,8 +88,8 @@ instance ToJSON LifecycleAction where
         object ["type" .= ("module_enable" :: Text), "module" .= ref, "priority" .= p]
     toJSON (DisableModule ref p) =
         object ["type" .= ("module_disable" :: Text), "module" .= ref, "priority" .= p]
-    toJSON (RestartModule ref) =
-        object ["type" .= ("module_restart" :: Text), "module" .= ref]
+    toJSON (RestartModule ref p) =
+        object ["type" .= ("module_restart" :: Text), "module" .= ref, "priority" .= p]
 
 instance FromJSON LifecycleAction where
     parseJSON = withObject "Module.LifecycleAction" $ \o -> do
@@ -97,5 +97,5 @@ instance FromJSON LifecycleAction where
         case t of
             "module_enable" -> EnableModule <$> o .: "module" <*> o .:? "priority" .!= 100
             "module_disable" -> DisableModule <$> o .: "module" <*> o .:? "priority" .!= 100
-            "module_restart" -> RestartModule <$> o .: "module"
+            "module_restart" -> RestartModule <$> o .: "module" <*> o .:? "priority" .!= 100
             _unknown -> fail $ "unknown module action type: " <> T.unpack t

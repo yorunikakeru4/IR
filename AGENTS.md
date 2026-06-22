@@ -13,6 +13,10 @@ See [CODESTYLE.md](CODESTYLE.md) for code quality, comments, Haskell, Nix, and t
 - To view a single issue with body: `tea issues --fields "index,title,body" <number>`
 - Don’t commit docs from superpowers
 
+## State-mutating actions carry priority
+
+Any `Action` constructor that mutates system state (enables/disables/restarts a module, sets a power profile, or similar) must carry an `Int` priority field. The field name in JSON is `"priority"`. Decoding must default to `100` when the field is absent. When adding a new state-mutating action: add the `Int` parameter to the constructor, emit `"priority"` in `ToJSON`, and default to `100` in `FromJSON`.
+
 ## Changelog
 
 When any public API changes — new types, constructors, functions, removed or renamed exports — add an entry to `CHANGELOG.md` under the current unreleased version before committing.

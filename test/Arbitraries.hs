@@ -120,8 +120,10 @@ instance Arbitrary Power.PowerProfile where
     shrink _ = []
 
 instance Arbitrary Power.Action where
-    arbitrary = Power.SetPowerProfile <$> arbitrary
-    shrink (Power.SetPowerProfile p) = Power.SetPowerProfile <$> shrink p
+    arbitrary = Power.SetPowerProfile <$> arbitrary <*> choose (0, 100)
+    shrink (Power.SetPowerProfile p pri) =
+        [Power.SetPowerProfile p' pri | p' <- shrink p]
+            <> [Power.SetPowerProfile p pri' | pri' <- shrink pri, pri' >= 0]
 
 instance Arbitrary ProfileName where
     arbitrary = requireRight . mkProfileName . T.pack <$> listOf1 arbitrary

@@ -35,7 +35,7 @@ renderPowerProfile Balanced = "balanced"
 renderPowerProfile PowerSave = "powersave"
 
 data Action
-    = SetPowerProfile PowerProfile
+    = SetPowerProfile PowerProfile Int
     deriving (Eq, Show)
 
 powerProfileOptions :: Options
@@ -48,12 +48,12 @@ instance FromJSON PowerProfile where
     parseJSON = genericParseJSON powerProfileOptions
 
 instance ToJSON Action where
-    toJSON (SetPowerProfile p) =
-        object ["type" .= ("power_profile" :: Text), "value" .= p]
+    toJSON (SetPowerProfile p pri) =
+        object ["type" .= ("power_profile" :: Text), "value" .= p, "priority" .= pri]
 
 instance FromJSON Action where
     parseJSON = withObject "Power.Action" $ \o -> do
         t <- o .: "type" :: Parser Text
         case t of
-            "power_profile" -> SetPowerProfile <$> o .: "value"
+            "power_profile" -> SetPowerProfile <$> o .: "value" <*> o .:? "priority" .!= 100
             _unknownType -> fail $ "unknown power action: " <> T.unpack t

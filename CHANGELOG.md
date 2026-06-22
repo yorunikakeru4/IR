@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- `IR.Domain.Module`: `RestartModule` constructor now carries an `Int` priority field (0–100). JSON gains a `"priority"` key; decoding defaults to `100` when absent for backward compatibility.
+- `IR.Domain.Power`: `SetPowerProfile` constructor now carries an `Int` priority field (0–100). JSON gains a `"priority"` key; decoding defaults to `100` when absent for backward compatibility.
+- `IR.Types`: `currentIRVersion` bumped from 8 to 9.
+
 - `IR.Domain.Network`: added `NetworkConfig { networkAllowPorts :: [Port] }` and
   `emptyNetworkConfig`. `AllowPorts` constructor removed from `Policy`; `allowPortsPolicy`
   removed. Port allowances now live in `IRDocument.irNetwork`, not in module policies.

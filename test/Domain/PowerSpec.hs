@@ -1,3 +1,4 @@
+{-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 
 module Domain.PowerSpec (tests) where
@@ -16,8 +17,11 @@ tests =
         [ testCase "Performance variant" $ Performance @?= Performance
         , testCase "Balanced variant" $ Balanced @?= Balanced
         , testCase "PowerSave variant" $ PowerSave @?= PowerSave
-        , testCase "SetPowerProfile carries profile" $
-            SetPowerProfile Performance @?= SetPowerProfile Performance
+        , testCase "SetPowerProfile carries profile and priority" $
+            SetPowerProfile Performance 100 @?= SetPowerProfile Performance 100
+        , testCase "decodes SetPowerProfile without priority field defaults to 100" $
+            (decode "{\"type\":\"power_profile\",\"value\":\"performance\"}" :: Maybe Action)
+                @?= Just (SetPowerProfile Performance 100)
         , testGroup
             "properties"
             [ testProperty "parsePowerProfile . renderPowerProfile roundtrips any profile" $

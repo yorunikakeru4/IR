@@ -6,7 +6,6 @@ import Arbitraries ()
 import Data.Aeson (decode, encode)
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Lazy as BSL
-import Domain.Network (emptyNetworkConfig)
 import Test.Tasty
 import Test.Tasty.HUnit
 import Test.Tasty.QuickCheck
@@ -20,22 +19,22 @@ tests =
             "packages JSON"
             [ testCase "omits packages key when list is empty" $
                 assertBool "unexpected packages key" $
-                    not ("\"packages\"" `BS.isInfixOf` BSL.toStrict (encode emptyDoc))
+                    not ("\"packages\"" `BS.isInfixOf` BSL.toStrict (encode emptyIRDocument))
             ]
         , testGroup
             "modules JSON"
             [ testCase "omits modules key when ModuleMap is empty" $
                 assertBool "unexpected modules key" $
-                    not ("\"modules\"" `BS.isInfixOf` BSL.toStrict (encode emptyDoc))
+                    not ("\"modules\"" `BS.isInfixOf` BSL.toStrict (encode emptyIRDocument))
             , testCase "decodes JSON without modules to emptyModuleMap" $
                 fmap irModules (decode "{\"version\":5,\"profiles\":[]}" :: Maybe IRDocument)
                     @?= Just emptyModuleMap
             , testCase "round-trips emptyModuleMap" $
-                decode (encode emptyDoc) @?= Just emptyDoc
+                decode (encode emptyIRDocument) @?= Just emptyIRDocument
             ]
         , testCase "omits services key" $
             assertBool "unexpected services key" $
-                not ("\"services\"" `BS.isInfixOf` BSL.toStrict (encode emptyDoc))
+                not ("\"services\"" `BS.isInfixOf` BSL.toStrict (encode emptyIRDocument))
         , testCase "currentIRVersion is 9" $
             currentIRVersion @?= IRVersion 9
         , testGroup
@@ -47,13 +46,3 @@ tests =
             ]
         ]
 
-emptyDoc :: IRDocument
-emptyDoc =
-    IRDocument
-        { irVersion = currentIRVersion
-        , irPackages = []
-        , irModules = emptyModuleMap
-        , irProfiles = []
-        , irUsers = []
-        , irNetwork = emptyNetworkConfig
-        }

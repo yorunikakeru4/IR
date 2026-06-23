@@ -15,6 +15,7 @@ module Types (
     mmIsEmpty,
     moduleMapEntries,
     IRDocument (..),
+    emptyIRDocument,
     PackageName,
     mkPackageName,
     packageNameText,
@@ -112,6 +113,18 @@ data IRDocument = IRDocument
     , irNetwork :: NetworkConfig
     }
     deriving (Eq, Show)
+
+-- | Empty IR document with the current schema version and no entries.
+emptyIRDocument :: IRDocument
+emptyIRDocument =
+    IRDocument
+        { irVersion = currentIRVersion
+        , irPackages = []
+        , irModules = emptyModuleMap
+        , irProfiles = []
+        , irUsers = []
+        , irNetwork = emptyNetworkConfig
+        }
 
 instance ToJSON IRVersion where
     toJSON (IRVersion n) = toJSON n

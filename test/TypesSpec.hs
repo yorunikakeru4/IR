@@ -45,4 +45,3 @@ tests =
                         === Right (profileNameText name)
             ]
         ]
-

@@ -17,9 +17,19 @@ import qualified Domain.Power as Power
 Adding a new action domain requires extending this sum and bumping 'Types.IRVersion'.
 -}
 data Action
+    = DesiredAction DesiredAction
+    | EffectAction EffectAction
+    deriving (Eq, Show)
+
+-- Action, whose state can be changed (should be with priority)
+data DesiredAction
     = PowerAction Power.Action
     | ModuleAction Module.LifecycleAction
-    | ModuleInstallAction Module.InstallAction
+    deriving (Eq, Show)
+
+-- Action, whose state can't be changed (no priority)
+data EffectAction
+    = ModuleInstallAction Module.InstallAction
     | ModuleConfigureAction Module.ConfigureAction
     | ModuleUnconfigureAction Module.UnconfigureAction
     deriving (Eq, Show)
@@ -31,23 +41,29 @@ class LiftAction a where
     liftAction :: a -> Action
 
 instance LiftAction Power.Action where
-    liftAction = PowerAction
+    liftAction = DesiredAction . PowerAction
 
 instance LiftAction Module.LifecycleAction where
-    liftAction = ModuleAction
+    liftAction = DesiredAction . ModuleAction
 
 instance LiftAction Module.InstallAction where
-    liftAction = ModuleInstallAction
+    liftAction = EffectAction . ModuleInstallAction
 
 instance LiftAction Module.ConfigureAction where
-    liftAction = ModuleConfigureAction
+    liftAction = EffectAction . ModuleConfigureAction
 
 instance LiftAction Module.UnconfigureAction where
-    liftAction = ModuleUnconfigureAction
+    liftAction = EffectAction . ModuleUnconfigureAction
 
 instance ToJSON Action where
+    toJSON (DesiredAction a) = toJSON a
+    toJSON (EffectAction a) = toJSON a
+
+instance ToJSON DesiredAction where
     toJSON (PowerAction a) = toJSON a
     toJSON (ModuleAction a) = toJSON a
+
+instance ToJSON EffectAction where
     toJSON (ModuleInstallAction a) = toJSON a
     toJSON (ModuleConfigureAction a) = toJSON a
     toJSON (ModuleUnconfigureAction a) = toJSON a
@@ -59,13 +75,21 @@ instance FromJSON Action where
             ( \o -> do
                 t <- o .: "type" :: Parser Text
                 case t of
-                    "power_profile" -> PowerAction <$> parseJSON v
-                    "module_enable" -> ModuleAction <$> parseJSON v
-                    "module_disable" -> ModuleAction <$> parseJSON v
-                    "module_restart" -> ModuleAction <$> parseJSON v
-                    "module_install" -> ModuleInstallAction <$> parseJSON v
-                    "module_configure" -> ModuleConfigureAction <$> parseJSON v
-                    "module_unconfigure" -> ModuleUnconfigureAction <$> parseJSON v
-                    _unknownType -> fail $ "unknown action type: " <> T.unpack t
+                    "power_profile" ->
+                        DesiredAction . PowerAction <$> parseJSON v
+                    "module_enable" ->
+                        DesiredAction . ModuleAction <$> parseJSON v
+                    "module_disable" ->
+                        DesiredAction . ModuleAction <$> parseJSON v
+                    "module_restart" ->
+                        DesiredAction . ModuleAction <$> parseJSON v
+                    "module_install" ->
+                        EffectAction . ModuleInstallAction <$> parseJSON v
+                    "module_configure" ->
+                        EffectAction . ModuleConfigureAction <$> parseJSON v
+                    "module_unconfigure" ->
+                        EffectAction . ModuleUnconfigureAction <$> parseJSON v
+                    _ ->
+                        fail $ "unknown action type: " <> T.unpack t
             )
             v

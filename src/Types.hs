@@ -20,6 +20,7 @@ module Types (
     PackageName,
     mkPackageName,
     packageNameText,
+    emptyProfileBody,
 ) where
 
 import Action (Action)
@@ -68,6 +69,9 @@ data ProfileBody = ProfileBody
     , pbPackages :: [PackageName]
     }
     deriving (Eq, Show)
+
+emptyProfileBody :: ProfileBody
+emptyProfileBody = ProfileBody{pbCondition = Nothing, pbPolicies = [], pbActions = [], pbPackages = []}
 
 instance ToJSON ProfileBody where
     toJSON pb =

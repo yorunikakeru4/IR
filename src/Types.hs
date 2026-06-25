@@ -11,6 +11,7 @@ module Types (
     mkProfileName,
     profileNameText,
     ProfileSection (..),
+    ProfileBody (..),
     ModulesConfig (..),
     emptyModules,
     modulesEmpty,

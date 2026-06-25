@@ -3,8 +3,8 @@
 -- | Closed root sum of all executable actions across domains.
 module Action (
     Action (..),
-    DesiredAction,
-    EffectAction,
+    DesiredAction (..),
+    EffectAction (..),
     LiftAction (..),
     desiredAction,
 ) where

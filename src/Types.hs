@@ -60,15 +60,28 @@ mkProfileName = mkName ProfileName
 profileNameText :: ProfileName -> Text
 profileNameText (ProfileName name) = name
 
--- | A named group of conditions, policies, and actions applied when the profile is active.
-data ProfileSection = ProfileSection
-    { profileName :: ProfileName
-    , profileCondition :: Maybe Condition
-    , profilePolicies :: [Policy]
-    , profileActions :: [Action]
-    , profilePackages :: [PackageName]
+data ProfileBody = ProfileBody
+    { pbCondition :: Maybe Condition
+    , pbPolicies :: [Policy]
+    , pbActions :: [Action]
+    , pbPackages :: [PackageName]
     }
     deriving (Eq, Show)
+
+instance ToJSON ProfileBody where
+    toJSON pb =
+        object $
+            ["policies" .= pbPolicies pb, "actions" .= pbActions pb]
+                <> maybe [] (\c -> ["condition" .= c]) (pbCondition pb)
+                <> omitEmpty "packages" (pbPackages pb)
+
+instance FromJSON ProfileBody where
+    parseJSON = withObject "ProfileBody" $ \o ->
+        ProfileBody
+            <$> o .:? "condition"
+            <*> o .:? "policies" .!= []
+            <*> o .:? "actions" .!= []
+            <*> o .:? "packages" .!= []
 
 data ModulesConfig = ModulesConfig
     { mmPostgreSQL :: Maybe PostgreSQLConfig
@@ -144,21 +157,25 @@ omitEmpty :: (ToJSON a, KeyValue e kv) => Key -> [a] -> [kv]
 omitEmpty _ [] = []
 omitEmpty key xs = [key .= xs]
 
+data ProfileSection = ProfileSection
+    { profileName :: ProfileName
+    , profileBody :: ProfileBody
+    }
+    deriving (Eq, Show)
+
 instance ToJSON ProfileSection where
     toJSON ps =
-        object $
-            ["name" .= profileName ps, "policies" .= profilePolicies ps, "actions" .= profileActions ps]
-                <> maybe [] (\c -> ["condition" .= c]) (profileCondition ps)
-                <> omitEmpty "packages" (profilePackages ps)
+        case toJSON (profileBody ps) of
+            Object body ->
+                Object $ body <> "name" .= profileName ps
+            _error ->
+                error "ProfileBody must encode to JSON object"
 
 instance FromJSON ProfileSection where
     parseJSON = withObject "ProfileSection" $ \o ->
         ProfileSection
             <$> o .: "name"
-            <*> o .:? "condition"
-            <*> o .: "policies"
-            <*> o .: "actions"
-            <*> o .:? "packages" .!= []
+            <*> parseJSON (Object o)
 
 instance ToJSON IRDocument where
     toJSON doc =

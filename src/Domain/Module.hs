@@ -14,7 +14,7 @@ module Domain.Module (
     UnconfigureAction (..),
 ) where
 
-import Data.Aeson (FromJSON, ToJSON, Value, object, parseJSON, toJSON, withObject, withText, (.!=), (.=), (.:), (.:?))
+import Data.Aeson (FromJSON, ToJSON, Value, object, parseJSON, toJSON, withObject, withText, (.!=), (.:), (.:?), (.=))
 import Data.Aeson.Types (Parser)
 import Data.Text (Text)
 import qualified Data.Text as T
@@ -107,7 +107,7 @@ data InstallAction = InstallModule ModuleRef
     deriving (Eq, Show)
 
 data ConfigureAction = ConfigureModule
-    { configureRef  :: ModuleRef
+    { configureRef :: ModuleRef
     , configureHash :: Text
     , configureJson :: Value
     }
@@ -125,13 +125,13 @@ instance FromJSON InstallAction where
         t <- o .: "type" :: Parser Text
         case t of
             "module_install" -> InstallModule <$> o .: "module"
-            _unknown         -> fail $ "unknown install action type: " <> T.unpack t
+            _unknown -> fail $ "unknown install action type: " <> T.unpack t
 
 instance ToJSON ConfigureAction where
     toJSON ca =
         object
-            [ "type"        .= ("module_configure" :: Text)
-            , "module"      .= configureRef ca
+            [ "type" .= ("module_configure" :: Text)
+            , "module" .= configureRef ca
             , "config_hash" .= configureHash ca
             , "config_json" .= configureJson ca
             ]
@@ -156,4 +156,4 @@ instance FromJSON UnconfigureAction where
         t <- o .: "type" :: Parser Text
         case t of
             "module_unconfigure" -> UnconfigureModule <$> o .: "module"
-            _unknown             -> fail $ "unknown unconfigure action type: " <> T.unpack t
+            _unknown -> fail $ "unknown unconfigure action type: " <> T.unpack t

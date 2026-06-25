@@ -2,9 +2,7 @@
 
 module Domain.ModuleSpec (tests) where
 
-import Data.Aeson (Value (..), decode, encode, object, (.=))
-import qualified Data.ByteString.Lazy.Char8 as BSLC
-import Data.List (isInfixOf)
+import Data.Aeson (ToJSON, Value (..), decode, encode, object, (.=))
 import qualified Data.Text as Data.Text.Internal
 import Domain.Error (DomainError (..))
 import Domain.Module
@@ -46,11 +44,23 @@ tests =
         , testGroup
             "LifecycleAction JSON"
             [ testCase "encodes EnableModule with correct type string" $
-                assertBool "missing module_enable" $
-                    "module_enable" `isInfixOf` BSLC.unpack (encode (EnableModule (ModuleRef NginxDomain (unsafeName "nginx")) 100))
+                assertEncodesTo
+                    (EnableModule (ModuleRef NginxDomain (unsafeName "nginx")) 100)
+                    ( object
+                        [ "type" .= String "module_enable"
+                        , "module" .= ModuleRef NginxDomain (unsafeName "nginx")
+                        , "priority" .= (100 :: Int)
+                        ]
+                    )
             , testCase "EnableModule encodes priority field" $
-                assertBool "missing priority" $
-                    "\"priority\"" `isInfixOf` BSLC.unpack (encode (EnableModule (ModuleRef NginxDomain (unsafeName "nginx")) 80))
+                assertEncodesTo
+                    (EnableModule (ModuleRef NginxDomain (unsafeName "nginx")) 80)
+                    ( object
+                        [ "type" .= String "module_enable"
+                        , "module" .= ModuleRef NginxDomain (unsafeName "nginx")
+                        , "priority" .= (80 :: Int)
+                        ]
+                    )
             , testCase "round-trips EnableModule with priority" $
                 let a = EnableModule (ModuleRef NginxDomain (unsafeName "nginx")) 80
                  in decode (encode a) @?= Just a
@@ -78,8 +88,13 @@ tests =
         , testGroup
             "InstallAction JSON"
             [ testCase "encodes type as module_install" $
-                assertBool "missing module_install" $
-                    "module_install" `isInfixOf` BSLC.unpack (encode (InstallModule (ModuleRef ForgejoDomain (unsafeName "forgejo"))))
+                assertEncodesTo
+                    (InstallModule (ModuleRef ForgejoDomain (unsafeName "forgejo")))
+                    ( object
+                        [ "type" .= String "module_install"
+                        , "module" .= ModuleRef ForgejoDomain (unsafeName "forgejo")
+                        ]
+                    )
             , testCase "round-trips InstallModule" $
                 let a = InstallModule (ModuleRef ForgejoDomain (unsafeName "forgejo"))
                  in decode (encode a) @?= Just a
@@ -92,8 +107,15 @@ tests =
             [ testCase "encodes type as module_configure" $
                 let v = String "test"
                     a = ConfigureModule (ModuleRef ForgejoDomain (unsafeName "forgejo")) "abc123" v
-                 in assertBool "missing module_configure" $
-                        "module_configure" `isInfixOf` BSLC.unpack (encode a)
+                 in assertEncodesTo
+                        a
+                        ( object
+                            [ "type" .= String "module_configure"
+                            , "module" .= ModuleRef ForgejoDomain (unsafeName "forgejo")
+                            , "config_hash" .= String "abc123"
+                            , "config_json" .= v
+                            ]
+                        )
             , testCase "round-trips ConfigureModule" $
                 let v = object ["http_port" .= (3000 :: Int)]
                     a = ConfigureModule (ModuleRef ForgejoDomain (unsafeName "forgejo")) "deadbeef" v
@@ -101,18 +123,44 @@ tests =
             , testCase "encodes config_hash field" $
                 let v = String "x"
                     a = ConfigureModule (ModuleRef ForgejoDomain (unsafeName "forgejo")) "myhash" v
-                 in assertBool "missing config_hash" $ "myhash" `isInfixOf` BSLC.unpack (encode a)
+                 in assertEncodesTo
+                        a
+                        ( object
+                            [ "type" .= String "module_configure"
+                            , "module" .= ModuleRef ForgejoDomain (unsafeName "forgejo")
+                            , "config_hash" .= String "myhash"
+                            , "config_json" .= v
+                            ]
+                        )
+            , testCase "rejects unknown type in ConfigureAction" $
+                ( decode
+                    "{\"type\":\"module_configure_bad\",\"module\":{\"domain\":\"forgejo\",\"name\":\"forgejo\"},\"config_hash\":\"hash\",\"config_json\":{}}" ::
+                    Maybe ConfigureAction
+                )
+                    @?= Nothing
             ]
         , testGroup
             "UnconfigureAction JSON"
             [ testCase "encodes type as module_unconfigure" $
-                assertBool "missing module_unconfigure" $
-                    "module_unconfigure" `isInfixOf` BSLC.unpack (encode (UnconfigureModule (ModuleRef NginxDomain (unsafeName "nginx"))))
+                assertEncodesTo
+                    (UnconfigureModule (ModuleRef NginxDomain (unsafeName "nginx")))
+                    ( object
+                        [ "type" .= String "module_unconfigure"
+                        , "module" .= ModuleRef NginxDomain (unsafeName "nginx")
+                        ]
+                    )
             , testCase "round-trips UnconfigureModule" $
                 let a = UnconfigureModule (ModuleRef NginxDomain (unsafeName "nginx"))
                  in decode (encode a) @?= Just a
+            , testCase "rejects unknown type in UnconfigureAction" $
+                (decode "{\"type\":\"module_unconfigure_bad\",\"module\":{\"domain\":\"nginx\",\"name\":\"nginx\"}}" :: Maybe UnconfigureAction)
+                    @?= Nothing
             ]
         ]
+
+assertEncodesTo :: (ToJSON a) => a -> Value -> Assertion
+assertEncodesTo actual expected =
+    decode (encode actual) @?= Just expected
 
 unsafeName :: Data.Text.Internal.Text -> ModuleName
 unsafeName t =

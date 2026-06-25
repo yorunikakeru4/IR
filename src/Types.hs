@@ -55,7 +55,7 @@ currentIRVersion = IRVersion 9
 
 -- | User-defined name for a profile section.
 newtype ProfileName = ProfileName Text
-    deriving (Eq, Show)
+    deriving (Eq, Ord, Show)
 
 mkProfileName :: Text -> Either DomainError ProfileName
 mkProfileName = mkName ProfileName

@@ -61,11 +61,12 @@ instance FromJSON ModuleName where
         name <- parseJSON value
         parseDomain (mkModuleName name)
 
+-- Eq, Ord, Show
 data ModuleRef = ModuleRef
     { moduleRefDomain :: ModuleDomain
     , moduleRefName :: ModuleName
     }
-    deriving (Eq, Show)
+    deriving (Eq, Ord, Show)
 
 instance ToJSON ModuleRef where
     toJSON ref =

@@ -8,3 +8,4 @@ cabal.project.local~
 *.hi
 *.o
 .hie
+.superpowers

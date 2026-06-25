@@ -13,7 +13,7 @@ import Domain.Error (DomainError, mkName, parseDomain)
 
 -- | Name of a FrogOS-managed package as declared in package metadata.
 newtype PackageName = PackageName Text
-    deriving (Eq, Show)
+    deriving (Eq, Ord, Show)
 
 mkPackageName :: Text -> Either DomainError PackageName
 mkPackageName = mkName PackageName

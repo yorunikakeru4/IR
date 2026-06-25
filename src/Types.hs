@@ -21,6 +21,7 @@ module Types (
     mkPackageName,
     packageNameText,
     emptyProfileBody,
+    moduleExists,
 ) where
 
 import Action (Action)
@@ -105,6 +106,16 @@ modulesEmpty _ = False
 omitNothing :: (ToJSON a, KeyValue e kv) => Key -> Maybe a -> [kv]
 omitNothing _ Nothing = []
 omitNothing key (Just x) = [key .= x]
+
+moduleExists :: Module.ModuleRef -> ModulesConfig -> Bool
+moduleExists ref mm =
+    case Module.moduleRefDomain ref of
+        Module.PostgreSQLDomain ->
+            maybe False ((== Module.moduleRefName ref) . PostgreSQL.configName) (mmPostgreSQL mm)
+        Module.NginxDomain ->
+            maybe False ((== Module.moduleRefName ref) . Nginx.configName) (mmNginx mm)
+        Module.ForgejoDomain ->
+            maybe False ((== Module.moduleRefName ref) . Forgejo.configName) (mmForgejo mm)
 
 instance ToJSON ModulesConfig where
     toJSON mm =

@@ -149,7 +149,7 @@ arbitraryGroup :: Gen T.Text
 arbitraryGroup = T.pack <$> listOf1 arbitrary
 
 shrinkGroup :: T.Text -> [T.Text]
-shrinkGroup group = T.pack <$> shrink (T.unpack group)
+shrinkGroup group = filter (not . T.null) (T.pack <$> shrink (T.unpack group))
 
 shrinkText :: T.Text -> [T.Text]
 shrinkText text = T.pack <$> shrink (T.unpack text)

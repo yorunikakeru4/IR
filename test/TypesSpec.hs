@@ -7,7 +7,9 @@ import Arbitraries ()
 import Data.Aeson (decode, encode)
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Lazy as BSL
-import Domain.User (UserConfig)
+import qualified Data.Text as T
+import qualified Domain.Package as Package
+import qualified Domain.User as User
 import Test.Tasty
 import Test.Tasty.HUnit
 import Test.Tasty.QuickCheck
@@ -45,8 +47,19 @@ tests =
                 \name ->
                     fmap profileNameText (mkProfileName (profileNameText name))
                         === Right (profileNameText name)
-            , testProperty "UserConfig packages and groups JSON roundtrip" $
-                \(cfg :: UserConfig) -> decode (encode cfg) === Just cfg
+            , testProperty "UserConfig shrink preserves non-empty groups" $
+                \(cfg :: User.UserConfig) ->
+                    all (all (not . T.null) . User.extraGroups) (shrink cfg)
+                        === True
+            , testProperty "IRDocument users with packages and groups JSON roundtrip" $
+                \(cfg :: User.UserConfig) (pkg :: Package.PackageName) (NonEmpty groupChars) ->
+                    let user =
+                            cfg
+                                { User.extraGroups = [T.pack groupChars]
+                                , User.packages = [pkg]
+                                }
+                        doc = emptyIRDocument{irUsers = [user]}
+                     in decode (encode doc) === Just doc
             , testProperty "IRDocument packages and network JSON roundtrip" $
                 \(doc :: IRDocument) -> decode (encode doc) === Just doc
             ]

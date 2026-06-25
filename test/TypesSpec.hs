@@ -1,4 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE ScopedTypeVariables #-}
 
 module TypesSpec (tests) where
 
@@ -6,6 +7,7 @@ import Arbitraries ()
 import Data.Aeson (decode, encode)
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Lazy as BSL
+import Domain.User (UserConfig)
 import Test.Tasty
 import Test.Tasty.HUnit
 import Test.Tasty.QuickCheck
@@ -43,5 +45,9 @@ tests =
                 \name ->
                     fmap profileNameText (mkProfileName (profileNameText name))
                         === Right (profileNameText name)
+            , testProperty "UserConfig packages and groups JSON roundtrip" $
+                \(cfg :: UserConfig) -> decode (encode cfg) === Just cfg
+            , testProperty "IRDocument packages and network JSON roundtrip" $
+                \(doc :: IRDocument) -> decode (encode doc) === Just doc
             ]
         ]

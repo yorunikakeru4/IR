@@ -11,7 +11,7 @@ import qualified Domain.System as System
 import qualified Domain.User as User
 import ObserveStrategy (IntervalMs, ObserveStrategy (..), intervalMilliseconds, mkIntervalMs)
 import Test.QuickCheck
-import Types (ProfileName, mkProfileName, profileNameText)
+import Types (IRDocument (..), ProfileName, emptyIRDocument, mkProfileName, profileNameText)
 
 requireRight :: (Show e) => Either e a -> a
 requireRight (Right x) = x
@@ -107,6 +107,10 @@ instance Arbitrary Network.Resource where
     arbitrary = Network.PortResource <$> arbitrary
     shrink (Network.PortResource p) = Network.PortResource <$> shrink p
 
+instance Arbitrary Network.NetworkConfig where
+    arbitrary = Network.NetworkConfig <$> listOf arbitrary
+    shrink (Network.NetworkConfig ps) = Network.NetworkConfig <$> shrink ps
+
 -- Policy constructors are not exported; smart constructors + listOf1 guarantee validity.
 instance Arbitrary Network.Policy where
     arbitrary = do
@@ -141,14 +145,42 @@ instance Arbitrary User.UserName where
         , Right candidate <- [User.mkUserName (T.pack str)]
         ]
 
+arbitraryGroup :: Gen T.Text
+arbitraryGroup = T.pack <$> listOf1 arbitrary
+
+shrinkGroup :: T.Text -> [T.Text]
+shrinkGroup group = T.pack <$> shrink (T.unpack group)
+
+shrinkText :: T.Text -> [T.Text]
+shrinkText text = T.pack <$> shrink (T.unpack text)
+
 instance Arbitrary User.UserConfig where
     arbitrary =
         User.UserConfig
             <$> arbitrary
             <*> arbitrary
             <*> (T.pack <$> arbitrary)
-            <*> listOf (T.pack <$> listOf1 arbitrary)
+            <*> listOf arbitraryGroup
             <*> arbitrary
     shrink cfg =
         [cfg{User.userName = n} | n <- shrink (User.userName cfg)]
+            <> [cfg{User.isNormalUser = b} | b <- shrink (User.isNormalUser cfg)]
+            <> [cfg{User.description = d} | d <- shrinkText (User.description cfg)]
+            <> [cfg{User.extraGroups = gs} | gs <- shrinkList shrinkGroup (User.extraGroups cfg)]
             <> [cfg{User.packages = ps} | ps <- shrink (User.packages cfg)]
+
+instance Arbitrary IRDocument where
+    arbitrary = do
+        pkgs <- arbitrary
+        users <- arbitrary
+        network <- arbitrary
+        pure
+            emptyIRDocument
+                { irPackages = pkgs
+                , irUsers = users
+                , irNetwork = network
+                }
+    shrink doc =
+        [doc{irPackages = pkgs} | pkgs <- shrink (irPackages doc)]
+            <> [doc{irUsers = users} | users <- shrink (irUsers doc)]
+            <> [doc{irNetwork = network} | network <- shrink (irNetwork doc)]

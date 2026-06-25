@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- `IR.Domain.Network`: `Port` now derives `Ord` to allow use in ordered containers.
+
 - `IR.Domain.Module`: `RestartModule` constructor now carries an `Int` priority field (0–100). JSON gains a `"priority"` key; decoding defaults to `100` when absent for backward compatibility.
 - `IR.Domain.Power`: `SetPowerProfile` constructor now carries an `Int` priority field (0–100). JSON gains a `"priority"` key; decoding defaults to `100` when absent for backward compatibility.
 - `IR.Types`: `currentIRVersion` bumped from 8 to 9.

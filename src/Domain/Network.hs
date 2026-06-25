@@ -21,7 +21,7 @@ import Domain.Error (DomainError (EmptyList), parseDomain)
 
 -- | A TCP/UDP port number (0–65535).
 newtype Port = Port Word16
-    deriving (Eq, Show)
+    deriving (Eq, Ord, Show)
 
 -- | A network resource that can serve as a fallback target.
 data Resource

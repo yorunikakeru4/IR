@@ -2,7 +2,7 @@
 
 module Domain.ModuleSpec (tests) where
 
-import Data.Aeson (decode, encode)
+import Data.Aeson (Value (..), decode, encode, object, (.=))
 import qualified Data.ByteString.Lazy.Char8 as BSLC
 import Data.List (isInfixOf)
 import qualified Data.Text as Data.Text.Internal
@@ -74,6 +74,43 @@ tests =
                     Maybe LifecycleAction
                 )
                     @?= Nothing
+            ]
+        , testGroup
+            "InstallAction JSON"
+            [ testCase "encodes type as module_install" $
+                assertBool "missing module_install" $
+                    "module_install" `isInfixOf` BSLC.unpack (encode (InstallModule (ModuleRef ForgejoDomain (unsafeName "forgejo"))))
+            , testCase "round-trips InstallModule" $
+                let a = InstallModule (ModuleRef ForgejoDomain (unsafeName "forgejo"))
+                 in decode (encode a) @?= Just a
+            , testCase "rejects unknown type in InstallAction" $
+                (decode "{\"type\":\"module_install_bad\",\"module\":{\"domain\":\"forgejo\",\"name\":\"forgejo\"}}" :: Maybe InstallAction)
+                    @?= Nothing
+            ]
+        , testGroup
+            "ConfigureAction JSON"
+            [ testCase "encodes type as module_configure" $
+                let v = String "test"
+                    a = ConfigureModule (ModuleRef ForgejoDomain (unsafeName "forgejo")) "abc123" v
+                 in assertBool "missing module_configure" $
+                        "module_configure" `isInfixOf` BSLC.unpack (encode a)
+            , testCase "round-trips ConfigureModule" $
+                let v = object ["http_port" .= (3000 :: Int)]
+                    a = ConfigureModule (ModuleRef ForgejoDomain (unsafeName "forgejo")) "deadbeef" v
+                 in decode (encode a) @?= Just a
+            , testCase "encodes config_hash field" $
+                let v = String "x"
+                    a = ConfigureModule (ModuleRef ForgejoDomain (unsafeName "forgejo")) "myhash" v
+                 in assertBool "missing config_hash" $ "myhash" `isInfixOf` BSLC.unpack (encode a)
+            ]
+        , testGroup
+            "UnconfigureAction JSON"
+            [ testCase "encodes type as module_unconfigure" $
+                assertBool "missing module_unconfigure" $
+                    "module_unconfigure" `isInfixOf` BSLC.unpack (encode (UnconfigureModule (ModuleRef NginxDomain (unsafeName "nginx"))))
+            , testCase "round-trips UnconfigureModule" $
+                let a = UnconfigureModule (ModuleRef NginxDomain (unsafeName "nginx"))
+                 in decode (encode a) @?= Just a
             ]
         ]
 

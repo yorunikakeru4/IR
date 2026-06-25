@@ -9,9 +9,12 @@ module Domain.Module (
     moduleNameText,
     ModuleRef (..),
     LifecycleAction (..),
+    InstallAction (..),
+    ConfigureAction (..),
+    UnconfigureAction (..),
 ) where
 
-import Data.Aeson
+import Data.Aeson (FromJSON, ToJSON, Value, object, parseJSON, toJSON, withObject, withText, (.!=), (.=), (.:), (.:?))
 import Data.Aeson.Types (Parser)
 import Data.Text (Text)
 import qualified Data.Text as T
@@ -99,3 +102,58 @@ instance FromJSON LifecycleAction where
             "module_disable" -> DisableModule <$> o .: "module" <*> o .:? "priority" .!= 100
             "module_restart" -> RestartModule <$> o .: "module" <*> o .:? "priority" .!= 100
             _unknown -> fail $ "unknown module action type: " <> T.unpack t
+
+data InstallAction = InstallModule ModuleRef
+    deriving (Eq, Show)
+
+data ConfigureAction = ConfigureModule
+    { configureRef  :: ModuleRef
+    , configureHash :: Text
+    , configureJson :: Value
+    }
+    deriving (Eq, Show)
+
+data UnconfigureAction = UnconfigureModule ModuleRef
+    deriving (Eq, Show)
+
+instance ToJSON InstallAction where
+    toJSON (InstallModule ref) =
+        object ["type" .= ("module_install" :: Text), "module" .= ref]
+
+instance FromJSON InstallAction where
+    parseJSON = withObject "InstallAction" $ \o -> do
+        t <- o .: "type" :: Parser Text
+        case t of
+            "module_install" -> InstallModule <$> o .: "module"
+            _unknown         -> fail $ "unknown install action type: " <> T.unpack t
+
+instance ToJSON ConfigureAction where
+    toJSON ca =
+        object
+            [ "type"        .= ("module_configure" :: Text)
+            , "module"      .= configureRef ca
+            , "config_hash" .= configureHash ca
+            , "config_json" .= configureJson ca
+            ]
+
+instance FromJSON ConfigureAction where
+    parseJSON = withObject "ConfigureAction" $ \o -> do
+        t <- o .: "type" :: Parser Text
+        case t of
+            "module_configure" ->
+                ConfigureModule
+                    <$> o .: "module"
+                    <*> o .: "config_hash"
+                    <*> o .: "config_json"
+            _unknown -> fail $ "unknown configure action type: " <> T.unpack t
+
+instance ToJSON UnconfigureAction where
+    toJSON (UnconfigureModule ref) =
+        object ["type" .= ("module_unconfigure" :: Text), "module" .= ref]
+
+instance FromJSON UnconfigureAction where
+    parseJSON = withObject "UnconfigureAction" $ \o -> do
+        t <- o .: "type" :: Parser Text
+        case t of
+            "module_unconfigure" -> UnconfigureModule <$> o .: "module"
+            _unknown             -> fail $ "unknown unconfigure action type: " <> T.unpack t

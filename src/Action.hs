@@ -6,6 +6,7 @@ module Action (
     DesiredAction,
     EffectAction,
     LiftAction (..),
+    desiredAction,
 ) where
 
 import Data.Aeson
@@ -35,6 +36,10 @@ data EffectAction
     | ModuleConfigureAction Module.ConfigureAction
     | ModuleUnconfigureAction Module.UnconfigureAction
     deriving (Eq, Show)
+
+desiredAction :: Action -> Maybe DesiredAction
+desiredAction (DesiredAction a) = Just a
+desiredAction (EffectAction _) = Nothing
 
 {- | Lift a domain action into the root 'Action' sum.
 Implement one instance per domain when adding a new 'Action' constructor.

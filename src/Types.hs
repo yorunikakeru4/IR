@@ -1,4 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
+{-# OPTIONS_GHC -Wno-unused-imports #-}
 
 {- | Core IR document structure: the top-level intent representation
 consumed by the FrogOS Planner.
@@ -10,10 +11,9 @@ module Types (
     mkProfileName,
     profileNameText,
     ProfileSection (..),
-    ModuleMap (..),
-    emptyModuleMap,
-    mmIsEmpty,
-    moduleMapEntries,
+    ModulesConfig (..),
+    emptyModules,
+    modulesEmpty,
     IRDocument (..),
     emptyIRDocument,
     PackageName,
@@ -70,44 +70,43 @@ data ProfileSection = ProfileSection
     }
     deriving (Eq, Show)
 
-data ModuleMap = ModuleMap
-    { mmPostgreSQL :: [PostgreSQLConfig]
-    , mmNginx :: [NginxConfig]
-    , mmForgejo :: [ForgejoConfig]
+data ModulesConfig = ModulesConfig
+    { mmPostgreSQL :: Maybe PostgreSQLConfig
+    , mmNginx :: Maybe NginxConfig
+    , mmForgejo :: Maybe ForgejoConfig
     }
     deriving (Eq, Show)
 
-emptyModuleMap :: ModuleMap
-emptyModuleMap = ModuleMap{mmPostgreSQL = [], mmNginx = [], mmForgejo = []}
+emptyModules :: ModulesConfig
+emptyModules = ModulesConfig{mmPostgreSQL = Nothing, mmNginx = Nothing, mmForgejo = Nothing}
 
-mmIsEmpty :: ModuleMap -> Bool
-mmIsEmpty mm = null (mmPostgreSQL mm) && null (mmNginx mm) && null (mmForgejo mm)
+modulesEmpty :: ModulesConfig -> Bool
+modulesEmpty (ModulesConfig Nothing Nothing Nothing) = True
+modulesEmpty _ = False
 
-moduleMapEntries :: ModuleMap -> [(Module.ModuleDomain, Module.ModuleName)]
-moduleMapEntries mm =
-    [(Module.PostgreSQLDomain, PostgreSQL.configName cfg) | cfg <- mmPostgreSQL mm]
-        <> [(Module.NginxDomain, Nginx.configName cfg) | cfg <- mmNginx mm]
-        <> [(Module.ForgejoDomain, Forgejo.configName cfg) | cfg <- mmForgejo mm]
+omitNothing :: (ToJSON a, KeyValue e kv) => Key -> Maybe a -> [kv]
+omitNothing _ Nothing = []
+omitNothing key (Just x) = [key .= x]
 
-instance ToJSON ModuleMap where
+instance ToJSON ModulesConfig where
     toJSON mm =
         object $
-            omitEmpty "postgresql" (mmPostgreSQL mm)
-                <> omitEmpty "nginx" (mmNginx mm)
-                <> omitEmpty "forgejo" (mmForgejo mm)
+            omitNothing "postgresql" (mmPostgreSQL mm)
+                <> omitNothing "nginx" (mmNginx mm)
+                <> omitNothing "forgejo" (mmForgejo mm)
 
-instance FromJSON ModuleMap where
-    parseJSON = withObject "ModuleMap" $ \o ->
-        ModuleMap
-            <$> o .:? "postgresql" .!= []
-            <*> o .:? "nginx" .!= []
-            <*> o .:? "forgejo" .!= []
+instance FromJSON ModulesConfig where
+    parseJSON = withObject "Modules" $ \o ->
+        ModulesConfig
+            <$> o .:? "postgresql"
+            <*> o .:? "nginx"
+            <*> o .:? "forgejo"
 
 -- | The complete IR document serialized as @intent.json@ for each generation.
 data IRDocument = IRDocument
     { irVersion :: IRVersion
     , irPackages :: [PackageName]
-    , irModules :: ModuleMap
+    , irModules :: ModulesConfig
     , irProfiles :: [ProfileSection]
     , irUsers :: [UserConfig]
     , irNetwork :: NetworkConfig
@@ -120,7 +119,7 @@ emptyIRDocument =
     IRDocument
         { irVersion = currentIRVersion
         , irPackages = []
-        , irModules = emptyModuleMap
+        , irModules = emptyModules
         , irProfiles = []
         , irUsers = []
         , irNetwork = emptyNetworkConfig
@@ -166,7 +165,7 @@ instance ToJSON IRDocument where
         object $
             ["version" .= irVersion doc, "profiles" .= irProfiles doc]
                 <> omitEmpty "packages" (irPackages doc)
-                <> (if mmIsEmpty (irModules doc) then [] else ["modules" .= irModules doc])
+                <> (if modulesEmpty (irModules doc) then [] else ["modules" .= irModules doc])
                 <> omitEmpty "users" (irUsers doc)
                 <> (if null (networkAllowPorts (irNetwork doc)) then [] else ["network" .= irNetwork doc])
 
@@ -175,7 +174,7 @@ instance FromJSON IRDocument where
         IRDocument
             <$> o .: "version"
             <*> o .:? "packages" .!= []
-            <*> o .:? "modules" .!= emptyModuleMap
+            <*> o .:? "modules" .!= emptyModules
             <*> o .: "profiles"
             <*> o .:? "users" .!= []
             <*> o .:? "network" .!= emptyNetworkConfig

@@ -30,9 +30,9 @@ tests =
             [ testCase "omits modules key when ModuleMap is empty" $
                 assertBool "unexpected modules key" $
                     not ("\"modules\"" `BS.isInfixOf` BSL.toStrict (encode emptyIRDocument))
-            , testCase "decodes JSON without modules to emptyModuleMap" $
+            , testCase "decodes JSON without modules to modulesEmpty" $
                 fmap irModules (decode "{\"version\":5,\"profiles\":[]}" :: Maybe IRDocument)
-                    @?= Just emptyModuleMap
+                    @?= Just emptyModules
             , testCase "round-trips emptyModuleMap" $
                 decode (encode emptyIRDocument) @?= Just emptyIRDocument
             ]

@@ -7,6 +7,7 @@ module Action (
     EffectAction (..),
     LiftAction (..),
     desiredAction,
+    IntoDesiredAction (..),
 ) where
 
 import Data.Aeson
@@ -29,6 +30,15 @@ data DesiredAction
     = PowerAction Power.Action
     | ModuleAction Module.LifecycleAction
     deriving (Eq, Show)
+
+class IntoDesiredAction a where
+    intoDesiredAction :: a -> DesiredAction
+
+instance IntoDesiredAction Module.LifecycleAction where
+    intoDesiredAction = ModuleAction
+
+instance IntoDesiredAction Power.Action where
+    intoDesiredAction = PowerAction
 
 -- Action, whose state can't be changed (no priority)
 data EffectAction

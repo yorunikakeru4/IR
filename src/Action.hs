@@ -34,7 +34,6 @@ data DesiredAction
 data EffectAction
     = ModuleInstallAction Module.InstallAction
     | ModuleConfigureAction Module.ConfigureAction
-    | ModuleUnconfigureAction Module.UnconfigureAction
     deriving (Eq, Show)
 
 desiredAction :: Action -> Maybe DesiredAction
@@ -59,9 +58,6 @@ instance LiftAction Module.InstallAction where
 instance LiftAction Module.ConfigureAction where
     liftAction = EffectAction . ModuleConfigureAction
 
-instance LiftAction Module.UnconfigureAction where
-    liftAction = EffectAction . ModuleUnconfigureAction
-
 instance ToJSON Action where
     toJSON (DesiredAction a) = toJSON a
     toJSON (EffectAction a) = toJSON a
@@ -73,7 +69,6 @@ instance ToJSON DesiredAction where
 instance ToJSON EffectAction where
     toJSON (ModuleInstallAction a) = toJSON a
     toJSON (ModuleConfigureAction a) = toJSON a
-    toJSON (ModuleUnconfigureAction a) = toJSON a
 
 instance FromJSON Action where
     parseJSON v =
@@ -94,8 +89,6 @@ instance FromJSON Action where
                         EffectAction . ModuleInstallAction <$> parseJSON v
                     "module_configure" ->
                         EffectAction . ModuleConfigureAction <$> parseJSON v
-                    "module_unconfigure" ->
-                        EffectAction . ModuleUnconfigureAction <$> parseJSON v
                     _ ->
                         fail $ "unknown action type: " <> T.unpack t
             )

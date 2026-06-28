@@ -28,8 +28,12 @@ tests =
                 encode NginxDomain @?= "\"nginx\""
             , testCase "encodes ForgejoDomain as \"forgejo\"" $
                 encode ForgejoDomain @?= "\"forgejo\""
+            , testCase "encodes VirtualizationDomain as \"virtualization\"" $
+                encode VirtualizationDomain @?= "\"virtualization\""
             , testCase "decodes \"postgresql\" to PostgreSQLDomain" $
                 decode "\"postgresql\"" @?= Just PostgreSQLDomain
+            , testCase "decodes \"virtualization\" to VirtualizationDomain" $
+                decode "\"virtualization\"" @?= Just VirtualizationDomain
             , testCase "rejects unknown domain" $
                 (decode "\"redis\"" :: Maybe ModuleDomain) @?= Nothing
             ]

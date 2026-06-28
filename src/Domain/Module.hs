@@ -24,12 +24,14 @@ data ModuleDomain
     = PostgreSQLDomain
     | NginxDomain
     | ForgejoDomain
+    | VirtualizationDomain
     deriving (Eq, Ord, Show)
 
 moduleDomainText :: ModuleDomain -> Text
 moduleDomainText PostgreSQLDomain = "postgresql"
 moduleDomainText NginxDomain = "nginx"
 moduleDomainText ForgejoDomain = "forgejo"
+moduleDomainText VirtualizationDomain = "virtualization"
 
 moduleDomainName :: ModuleDomain -> ModuleName
 moduleDomainName = ModuleName . moduleDomainText
@@ -42,6 +44,7 @@ instance FromJSON ModuleDomain where
         "postgresql" -> pure PostgreSQLDomain
         "nginx" -> pure NginxDomain
         "forgejo" -> pure ForgejoDomain
+        "virtualization" -> pure VirtualizationDomain
         _unknown -> fail $ "unknown module domain: " <> T.unpack t
 
 newtype ModuleName = ModuleName Text

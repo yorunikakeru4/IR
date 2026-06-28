@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- `IR.Domain.Module`: added `VirtualizationDomain` with JSON value `"virtualization"`.
+- `IR.Domain.Module.Virtualization`: added `VirtualizationConfig { configName, enable }`.
+- `IR.Types`: `ModulesConfig` gains `mmVirtualization`, serialized as optional
+  `"virtualization"` module config. `currentIRVersion` bumped from 9 to 10.
+
 - `IR.Domain.Network`: `Port` now derives `Ord` to allow use in ordered containers.
 
 - `IR.Domain.Module`: `RestartModule` constructor now carries an `Int` priority field (0–100). JSON gains a `"priority"` key; decoding defaults to `100` when absent for backward compatibility.

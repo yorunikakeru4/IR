@@ -36,6 +36,8 @@ import Domain.Module.Nginx (NginxConfig)
 import qualified Domain.Module.Nginx as Nginx
 import Domain.Module.PostgreSQL (PostgreSQLConfig)
 import qualified Domain.Module.PostgreSQL as PostgreSQL
+import Domain.Module.Virtualization (VirtualizationConfig)
+import qualified Domain.Module.Virtualization as Virtualization
 import Domain.Network (NetworkConfig, emptyNetworkConfig, networkAllowPorts)
 import Domain.Package (PackageName, mkPackageName, packageNameText)
 import Domain.User (UserConfig)
@@ -51,7 +53,7 @@ newtype IRVersion = IRVersion Int
 changes, including condition/action sums and module config shapes.
 -}
 currentIRVersion :: IRVersion
-currentIRVersion = IRVersion 9
+currentIRVersion = IRVersion 10
 
 -- | User-defined name for a profile section.
 newtype ProfileName = ProfileName Text
@@ -93,14 +95,15 @@ data ModulesConfig = ModulesConfig
     { mmPostgreSQL :: Maybe PostgreSQLConfig
     , mmNginx :: Maybe NginxConfig
     , mmForgejo :: Maybe ForgejoConfig
+    , mmVirtualization :: Maybe VirtualizationConfig
     }
     deriving (Eq, Show)
 
 emptyModules :: ModulesConfig
-emptyModules = ModulesConfig{mmPostgreSQL = Nothing, mmNginx = Nothing, mmForgejo = Nothing}
+emptyModules = ModulesConfig{mmPostgreSQL = Nothing, mmNginx = Nothing, mmForgejo = Nothing, mmVirtualization = Nothing}
 
 modulesEmpty :: ModulesConfig -> Bool
-modulesEmpty (ModulesConfig Nothing Nothing Nothing) = True
+modulesEmpty (ModulesConfig Nothing Nothing Nothing Nothing) = True
 modulesEmpty _ = False
 
 omitNothing :: (ToJSON a, KeyValue e kv) => Key -> Maybe a -> [kv]
@@ -116,6 +119,8 @@ moduleExists ref mm =
             maybe False ((== Module.moduleRefName ref) . Nginx.configName) (mmNginx mm)
         Module.ForgejoDomain ->
             maybe False ((== Module.moduleRefName ref) . Forgejo.configName) (mmForgejo mm)
+        Module.VirtualizationDomain ->
+            maybe False ((== Module.moduleRefName ref) . Virtualization.configName) (mmVirtualization mm)
 
 instance ToJSON ModulesConfig where
     toJSON mm =
@@ -123,6 +128,7 @@ instance ToJSON ModulesConfig where
             omitNothing "postgresql" (mmPostgreSQL mm)
                 <> omitNothing "nginx" (mmNginx mm)
                 <> omitNothing "forgejo" (mmForgejo mm)
+                <> omitNothing "virtualization" (mmVirtualization mm)
 
 instance FromJSON ModulesConfig where
     parseJSON = withObject "Modules" $ \o ->
@@ -130,6 +136,7 @@ instance FromJSON ModulesConfig where
             <$> o .:? "postgresql"
             <*> o .:? "nginx"
             <*> o .:? "forgejo"
+            <*> o .:? "virtualization"
 
 -- | The complete IR document serialized as @intent.json@ for each generation.
 data IRDocument = IRDocument
